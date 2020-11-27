@@ -1,0 +1,11 @@
+{
+    "AppSyncApiName": "bonews",
+    "DynamoDBBillingMode": "PAY_PER_REQUEST",
+    "DynamoDBEnableServerSideEncryption": false,
+    "AuthCognitoUserPoolId": {
+        "Fn::GetAtt": [
+            "authbonewsbea90b3dbea90b3d",
+            "Outputs.UserPoolId"
+        ]
+    }
+}

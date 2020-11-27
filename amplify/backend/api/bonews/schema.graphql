@@ -1,0 +1,47 @@
+type Profile @model {
+  id: ID!
+  username: String!
+  nickname: String!
+  emailAddress:String!
+  profileImage: String
+  backgroundImage: String
+  posts: [Post] @connection(keyName: "byProfile", fields: ["id"])
+}
+
+type Post @model @key(name: "byProfile", fields: ["profileID"]) {
+  id: ID!
+  title: String!
+  status: PostStatus!
+  date: String!
+  profileID: ID!
+  contents: String
+  image: String
+  profile: Profile @connection(fields: ["profileID"])
+  comments: [Comment] @connection(keyName: "byPost", fields: ["id"])
+  likes: [Like] @connection(keyName: "byPost", fields: ["id"])
+}
+
+type PostPermission @model {
+  username: String!
+  permission: Boolean!
+}
+
+type Comment @model @key(name: "byPost", fields: ["postID", "content"]) {
+  id: ID!
+  postID: ID!
+  profileID: ID!
+  post: Post @connection(fields: ["postID"])
+  content: String!
+}
+
+type Like @model @key(name: "byPost", fields: ["postID"]) {
+  id: ID!
+  postID: ID!
+  profileID: ID!
+  post: Post @connection(fields: ["postID"])
+}
+
+enum PostStatus {
+  DRAFT
+  PUBLISHED
+}

@@ -1,0 +1,20 @@
+{
+  "dev": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-bonews-dev-11314-authRole",
+      "UnauthRoleArn": "arn:aws:iam::114009492132:role/amplify-bonews-dev-11314-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::114009492132:role/amplify-bonews-dev-11314-authRole",
+      "Region": "us-east-1",
+      "DeploymentBucketName": "amplify-bonews-dev-11314-deployment",
+      "UnauthRoleName": "amplify-bonews-dev-11314-unauthRole",
+      "StackName": "amplify-bonews-dev-11314",
+      "StackId": "arn:aws:cloudformation:us-east-1:114009492132:stack/amplify-bonews-dev-11314/b6eb5690-3077-11eb-8b31-12189cd24959",
+      "AmplifyAppId": "d2gncl3vv8o562"
+    },
+    "categories": {
+      "auth": {
+        "bonewsbea90b3dbea90b3d": {}
+      }
+    }
+  }
+}

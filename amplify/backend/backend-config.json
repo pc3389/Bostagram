@@ -1,0 +1,33 @@
+{
+  "auth": {
+    "bonewsbea90b3dbea90b3d": {
+      "service": "Cognito",
+      "providerPlugin": "awscloudformation",
+      "dependsOn": [],
+      "customAuth": false
+    }
+  },
+  "api": {
+    "bonews": {
+      "service": "AppSync",
+      "providerPlugin": "awscloudformation",
+      "output": {
+        "authConfig": {
+          "defaultAuthentication": {
+            "authenticationType": "AMAZON_COGNITO_USER_POOLS",
+            "userPoolConfig": {
+              "userPoolId": "authbonewsbea90b3dbea90b3d"
+            }
+          },
+          "additionalAuthenticationProviders": []
+        }
+      }
+    }
+  },
+  "storage": {
+    "s3eea30924": {
+      "service": "S3",
+      "providerPlugin": "awscloudformation"
+    }
+  }
+}

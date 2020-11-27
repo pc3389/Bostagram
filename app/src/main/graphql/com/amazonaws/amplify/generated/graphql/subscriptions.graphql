@@ -1,0 +1,607 @@
+# this is an auto generated file. This will be overwritten
+subscription OnCreateProfile {
+  onCreateProfile {
+    id
+    username
+    nickname
+    emailAddress
+    profileImage
+    backgroundImage
+    posts {
+      items {
+        id
+        title
+        status
+        date
+        profileID
+        contents
+        image
+        _version
+        _deleted
+        _lastChangedAt
+        createdAt
+        updatedAt
+      }
+      nextToken
+      startedAt
+    }
+    _version
+    _deleted
+    _lastChangedAt
+    createdAt
+    updatedAt
+  }
+}
+subscription OnUpdateProfile {
+  onUpdateProfile {
+    id
+    username
+    nickname
+    emailAddress
+    profileImage
+    backgroundImage
+    posts {
+      items {
+        id
+        title
+        status
+        date
+        profileID
+        contents
+        image
+        _version
+        _deleted
+        _lastChangedAt
+        createdAt
+        updatedAt
+      }
+      nextToken
+      startedAt
+    }
+    _version
+    _deleted
+    _lastChangedAt
+    createdAt
+    updatedAt
+  }
+}
+subscription OnDeleteProfile {
+  onDeleteProfile {
+    id
+    username
+    nickname
+    emailAddress
+    profileImage
+    backgroundImage
+    posts {
+      items {
+        id
+        title
+        status
+        date
+        profileID
+        contents
+        image
+        _version
+        _deleted
+        _lastChangedAt
+        createdAt
+        updatedAt
+      }
+      nextToken
+      startedAt
+    }
+    _version
+    _deleted
+    _lastChangedAt
+    createdAt
+    updatedAt
+  }
+}
+subscription OnCreatePost {
+  onCreatePost {
+    id
+    title
+    status
+    date
+    profileID
+    contents
+    image
+    profile {
+      id
+      username
+      nickname
+      emailAddress
+      profileImage
+      backgroundImage
+      posts {
+        nextToken
+        startedAt
+      }
+      _version
+      _deleted
+      _lastChangedAt
+      createdAt
+      updatedAt
+    }
+    comments {
+      items {
+        id
+        postID
+        profileID
+        content
+        _version
+        _deleted
+        _lastChangedAt
+        createdAt
+        updatedAt
+      }
+      nextToken
+      startedAt
+    }
+    likes {
+      items {
+        id
+        postID
+        profileID
+        _version
+        _deleted
+        _lastChangedAt
+        createdAt
+        updatedAt
+      }
+      nextToken
+      startedAt
+    }
+    _version
+    _deleted
+    _lastChangedAt
+    createdAt
+    updatedAt
+  }
+}
+subscription OnUpdatePost {
+  onUpdatePost {
+    id
+    title
+    status
+    date
+    profileID
+    contents
+    image
+    profile {
+      id
+      username
+      nickname
+      emailAddress
+      profileImage
+      backgroundImage
+      posts {
+        nextToken
+        startedAt
+      }
+      _version
+      _deleted
+      _lastChangedAt
+      createdAt
+      updatedAt
+    }
+    comments {
+      items {
+        id
+        postID
+        profileID
+        content
+        _version
+        _deleted
+        _lastChangedAt
+        createdAt
+        updatedAt
+      }
+      nextToken
+      startedAt
+    }
+    likes {
+      items {
+        id
+        postID
+        profileID
+        _version
+        _deleted
+        _lastChangedAt
+        createdAt
+        updatedAt
+      }
+      nextToken
+      startedAt
+    }
+    _version
+    _deleted
+    _lastChangedAt
+    createdAt
+    updatedAt
+  }
+}
+subscription OnDeletePost {
+  onDeletePost {
+    id
+    title
+    status
+    date
+    profileID
+    contents
+    image
+    profile {
+      id
+      username
+      nickname
+      emailAddress
+      profileImage
+      backgroundImage
+      posts {
+        nextToken
+        startedAt
+      }
+      _version
+      _deleted
+      _lastChangedAt
+      createdAt
+      updatedAt
+    }
+    comments {
+      items {
+        id
+        postID
+        profileID
+        content
+        _version
+        _deleted
+        _lastChangedAt
+        createdAt
+        updatedAt
+      }
+      nextToken
+      startedAt
+    }
+    likes {
+      items {
+        id
+        postID
+        profileID
+        _version
+        _deleted
+        _lastChangedAt
+        createdAt
+        updatedAt
+      }
+      nextToken
+      startedAt
+    }
+    _version
+    _deleted
+    _lastChangedAt
+    createdAt
+    updatedAt
+  }
+}
+subscription OnCreatePostPermission {
+  onCreatePostPermission {
+    id
+    username
+    permission
+    _version
+    _deleted
+    _lastChangedAt
+    createdAt
+    updatedAt
+  }
+}
+subscription OnUpdatePostPermission {
+  onUpdatePostPermission {
+    id
+    username
+    permission
+    _version
+    _deleted
+    _lastChangedAt
+    createdAt
+    updatedAt
+  }
+}
+subscription OnDeletePostPermission {
+  onDeletePostPermission {
+    id
+    username
+    permission
+    _version
+    _deleted
+    _lastChangedAt
+    createdAt
+    updatedAt
+  }
+}
+subscription OnCreateComment {
+  onCreateComment {
+    id
+    postID
+    profileID
+    post {
+      id
+      title
+      status
+      date
+      profileID
+      contents
+      image
+      profile {
+        id
+        username
+        nickname
+        emailAddress
+        profileImage
+        backgroundImage
+        _version
+        _deleted
+        _lastChangedAt
+        createdAt
+        updatedAt
+      }
+      comments {
+        nextToken
+        startedAt
+      }
+      likes {
+        nextToken
+        startedAt
+      }
+      _version
+      _deleted
+      _lastChangedAt
+      createdAt
+      updatedAt
+    }
+    content
+    _version
+    _deleted
+    _lastChangedAt
+    createdAt
+    updatedAt
+  }
+}
+subscription OnUpdateComment {
+  onUpdateComment {
+    id
+    postID
+    profileID
+    post {
+      id
+      title
+      status
+      date
+      profileID
+      contents
+      image
+      profile {
+        id
+        username
+        nickname
+        emailAddress
+        profileImage
+        backgroundImage
+        _version
+        _deleted
+        _lastChangedAt
+        createdAt
+        updatedAt
+      }
+      comments {
+        nextToken
+        startedAt
+      }
+      likes {
+        nextToken
+        startedAt
+      }
+      _version
+      _deleted
+      _lastChangedAt
+      createdAt
+      updatedAt
+    }
+    content
+    _version
+    _deleted
+    _lastChangedAt
+    createdAt
+    updatedAt
+  }
+}
+subscription OnDeleteComment {
+  onDeleteComment {
+    id
+    postID
+    profileID
+    post {
+      id
+      title
+      status
+      date
+      profileID
+      contents
+      image
+      profile {
+        id
+        username
+        nickname
+        emailAddress
+        profileImage
+        backgroundImage
+        _version
+        _deleted
+        _lastChangedAt
+        createdAt
+        updatedAt
+      }
+      comments {
+        nextToken
+        startedAt
+      }
+      likes {
+        nextToken
+        startedAt
+      }
+      _version
+      _deleted
+      _lastChangedAt
+      createdAt
+      updatedAt
+    }
+    content
+    _version
+    _deleted
+    _lastChangedAt
+    createdAt
+    updatedAt
+  }
+}
+subscription OnCreateLike {
+  onCreateLike {
+    id
+    postID
+    profileID
+    post {
+      id
+      title
+      status
+      date
+      profileID
+      contents
+      image
+      profile {
+        id
+        username
+        nickname
+        emailAddress
+        profileImage
+        backgroundImage
+        _version
+        _deleted
+        _lastChangedAt
+        createdAt
+        updatedAt
+      }
+      comments {
+        nextToken
+        startedAt
+      }
+      likes {
+        nextToken
+        startedAt
+      }
+      _version
+      _deleted
+      _lastChangedAt
+      createdAt
+      updatedAt
+    }
+    _version
+    _deleted
+    _lastChangedAt
+    createdAt
+    updatedAt
+  }
+}
+subscription OnUpdateLike {
+  onUpdateLike {
+    id
+    postID
+    profileID
+    post {
+      id
+      title
+      status
+      date
+      profileID
+      contents
+      image
+      profile {
+        id
+        username
+        nickname
+        emailAddress
+        profileImage
+        backgroundImage
+        _version
+        _deleted
+        _lastChangedAt
+        createdAt
+        updatedAt
+      }
+      comments {
+        nextToken
+        startedAt
+      }
+      likes {
+        nextToken
+        startedAt
+      }
+      _version
+      _deleted
+      _lastChangedAt
+      createdAt
+      updatedAt
+    }
+    _version
+    _deleted
+    _lastChangedAt
+    createdAt
+    updatedAt
+  }
+}
+subscription OnDeleteLike {
+  onDeleteLike {
+    id
+    postID
+    profileID
+    post {
+      id
+      title
+      status
+      date
+      profileID
+      contents
+      image
+      profile {
+        id
+        username
+        nickname
+        emailAddress
+        profileImage
+        backgroundImage
+        _version
+        _deleted
+        _lastChangedAt
+        createdAt
+        updatedAt
+      }
+      comments {
+        nextToken
+        startedAt
+      }
+      likes {
+        nextToken
+        startedAt
+      }
+      _version
+      _deleted
+      _lastChangedAt
+      createdAt
+      updatedAt
+    }
+    _version
+    _deleted
+    _lastChangedAt
+    createdAt
+    updatedAt
+  }
+}
