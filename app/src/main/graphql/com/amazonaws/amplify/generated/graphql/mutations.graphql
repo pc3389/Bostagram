@@ -9,6 +9,7 @@ mutation CreateProfile(
     nickname
     emailAddress
     profileImage
+    hasImage
     backgroundImage
     posts {
       items {
@@ -19,6 +20,7 @@ mutation CreateProfile(
         profileID
         contents
         image
+        hasImage
         _version
         _deleted
         _lastChangedAt
@@ -45,6 +47,7 @@ mutation UpdateProfile(
     nickname
     emailAddress
     profileImage
+    hasImage
     backgroundImage
     posts {
       items {
@@ -55,6 +58,7 @@ mutation UpdateProfile(
         profileID
         contents
         image
+        hasImage
         _version
         _deleted
         _lastChangedAt
@@ -81,6 +85,7 @@ mutation DeleteProfile(
     nickname
     emailAddress
     profileImage
+    hasImage
     backgroundImage
     posts {
       items {
@@ -91,6 +96,7 @@ mutation DeleteProfile(
         profileID
         contents
         image
+        hasImage
         _version
         _deleted
         _lastChangedAt
@@ -119,12 +125,14 @@ mutation CreatePost(
     profileID
     contents
     image
+    hasImage
     profile {
       id
       username
       nickname
       emailAddress
       profileImage
+      hasImage
       backgroundImage
       posts {
         nextToken
@@ -141,21 +149,9 @@ mutation CreatePost(
         id
         postID
         profileID
+        date
+        name
         content
-        _version
-        _deleted
-        _lastChangedAt
-        createdAt
-        updatedAt
-      }
-      nextToken
-      startedAt
-    }
-    likes {
-      items {
-        id
-        postID
-        profileID
         _version
         _deleted
         _lastChangedAt
@@ -184,12 +180,14 @@ mutation UpdatePost(
     profileID
     contents
     image
+    hasImage
     profile {
       id
       username
       nickname
       emailAddress
       profileImage
+      hasImage
       backgroundImage
       posts {
         nextToken
@@ -206,21 +204,9 @@ mutation UpdatePost(
         id
         postID
         profileID
+        date
+        name
         content
-        _version
-        _deleted
-        _lastChangedAt
-        createdAt
-        updatedAt
-      }
-      nextToken
-      startedAt
-    }
-    likes {
-      items {
-        id
-        postID
-        profileID
         _version
         _deleted
         _lastChangedAt
@@ -249,12 +235,14 @@ mutation DeletePost(
     profileID
     contents
     image
+    hasImage
     profile {
       id
       username
       nickname
       emailAddress
       profileImage
+      hasImage
       backgroundImage
       posts {
         nextToken
@@ -271,21 +259,9 @@ mutation DeletePost(
         id
         postID
         profileID
+        date
+        name
         content
-        _version
-        _deleted
-        _lastChangedAt
-        createdAt
-        updatedAt
-      }
-      nextToken
-      startedAt
-    }
-    likes {
-      items {
-        id
-        postID
-        profileID
         _version
         _deleted
         _lastChangedAt
@@ -355,6 +331,8 @@ mutation CreateComment(
     id
     postID
     profileID
+    date
+    name
     post {
       id
       title
@@ -363,12 +341,14 @@ mutation CreateComment(
       profileID
       contents
       image
+      hasImage
       profile {
         id
         username
         nickname
         emailAddress
         profileImage
+        hasImage
         backgroundImage
         _version
         _deleted
@@ -377,10 +357,6 @@ mutation CreateComment(
         updatedAt
       }
       comments {
-        nextToken
-        startedAt
-      }
-      likes {
         nextToken
         startedAt
       }
@@ -406,6 +382,8 @@ mutation UpdateComment(
     id
     postID
     profileID
+    date
+    name
     post {
       id
       title
@@ -414,12 +392,14 @@ mutation UpdateComment(
       profileID
       contents
       image
+      hasImage
       profile {
         id
         username
         nickname
         emailAddress
         profileImage
+        hasImage
         backgroundImage
         _version
         _deleted
@@ -428,10 +408,6 @@ mutation UpdateComment(
         updatedAt
       }
       comments {
-        nextToken
-        startedAt
-      }
-      likes {
         nextToken
         startedAt
       }
@@ -457,6 +433,8 @@ mutation DeleteComment(
     id
     postID
     profileID
+    date
+    name
     post {
       id
       title
@@ -465,12 +443,14 @@ mutation DeleteComment(
       profileID
       contents
       image
+      hasImage
       profile {
         id
         username
         nickname
         emailAddress
         profileImage
+        hasImage
         backgroundImage
         _version
         _deleted
@@ -479,10 +459,6 @@ mutation DeleteComment(
         updatedAt
       }
       comments {
-        nextToken
-        startedAt
-      }
-      likes {
         nextToken
         startedAt
       }
@@ -493,156 +469,6 @@ mutation DeleteComment(
       updatedAt
     }
     content
-    _version
-    _deleted
-    _lastChangedAt
-    createdAt
-    updatedAt
-  }
-}
-mutation CreateLike(
-  $input: CreateLikeInput!
-  $condition: ModelLikeConditionInput
-) {
-  createLike(input: $input, condition: $condition) {
-    id
-    postID
-    profileID
-    post {
-      id
-      title
-      status
-      date
-      profileID
-      contents
-      image
-      profile {
-        id
-        username
-        nickname
-        emailAddress
-        profileImage
-        backgroundImage
-        _version
-        _deleted
-        _lastChangedAt
-        createdAt
-        updatedAt
-      }
-      comments {
-        nextToken
-        startedAt
-      }
-      likes {
-        nextToken
-        startedAt
-      }
-      _version
-      _deleted
-      _lastChangedAt
-      createdAt
-      updatedAt
-    }
-    _version
-    _deleted
-    _lastChangedAt
-    createdAt
-    updatedAt
-  }
-}
-mutation UpdateLike(
-  $input: UpdateLikeInput!
-  $condition: ModelLikeConditionInput
-) {
-  updateLike(input: $input, condition: $condition) {
-    id
-    postID
-    profileID
-    post {
-      id
-      title
-      status
-      date
-      profileID
-      contents
-      image
-      profile {
-        id
-        username
-        nickname
-        emailAddress
-        profileImage
-        backgroundImage
-        _version
-        _deleted
-        _lastChangedAt
-        createdAt
-        updatedAt
-      }
-      comments {
-        nextToken
-        startedAt
-      }
-      likes {
-        nextToken
-        startedAt
-      }
-      _version
-      _deleted
-      _lastChangedAt
-      createdAt
-      updatedAt
-    }
-    _version
-    _deleted
-    _lastChangedAt
-    createdAt
-    updatedAt
-  }
-}
-mutation DeleteLike(
-  $input: DeleteLikeInput!
-  $condition: ModelLikeConditionInput
-) {
-  deleteLike(input: $input, condition: $condition) {
-    id
-    postID
-    profileID
-    post {
-      id
-      title
-      status
-      date
-      profileID
-      contents
-      image
-      profile {
-        id
-        username
-        nickname
-        emailAddress
-        profileImage
-        backgroundImage
-        _version
-        _deleted
-        _lastChangedAt
-        createdAt
-        updatedAt
-      }
-      comments {
-        nextToken
-        startedAt
-      }
-      likes {
-        nextToken
-        startedAt
-      }
-      _version
-      _deleted
-      _lastChangedAt
-      createdAt
-      updatedAt
-    }
     _version
     _deleted
     _lastChangedAt

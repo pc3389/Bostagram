@@ -23,10 +23,14 @@ import static com.amplifyframework.core.model.query.predicate.QueryField.field;
 public final class Comment implements Model {
   public static final QueryField ID = field("id");
   public static final QueryField PROFILE_ID = field("profileID");
+  public static final QueryField DATE = field("date");
+  public static final QueryField NAME = field("name");
   public static final QueryField POST = field("postID");
   public static final QueryField CONTENT = field("content");
   private final @ModelField(targetType="ID", isRequired = true) String id;
   private final @ModelField(targetType="ID", isRequired = true) String profileID;
+  private final @ModelField(targetType="String", isRequired = true) String date;
+  private final @ModelField(targetType="String", isRequired = true) String name;
   private final @ModelField(targetType="Post") @BelongsTo(targetName = "postID", type = Post.class) Post post;
   private final @ModelField(targetType="String", isRequired = true) String content;
   public String getId() {
@@ -37,6 +41,14 @@ public final class Comment implements Model {
       return profileID;
   }
   
+  public String getDate() {
+      return date;
+  }
+  
+  public String getName() {
+      return name;
+  }
+  
   public Post getPost() {
       return post;
   }
@@ -45,9 +57,11 @@ public final class Comment implements Model {
       return content;
   }
   
-  private Comment(String id, String profileID, Post post, String content) {
+  private Comment(String id, String profileID, String date, String name, Post post, String content) {
     this.id = id;
     this.profileID = profileID;
+    this.date = date;
+    this.name = name;
     this.post = post;
     this.content = content;
   }
@@ -62,6 +76,8 @@ public final class Comment implements Model {
       Comment comment = (Comment) obj;
       return ObjectsCompat.equals(getId(), comment.getId()) &&
               ObjectsCompat.equals(getProfileId(), comment.getProfileId()) &&
+              ObjectsCompat.equals(getDate(), comment.getDate()) &&
+              ObjectsCompat.equals(getName(), comment.getName()) &&
               ObjectsCompat.equals(getPost(), comment.getPost()) &&
               ObjectsCompat.equals(getContent(), comment.getContent());
       }
@@ -72,6 +88,8 @@ public final class Comment implements Model {
     return new StringBuilder()
       .append(getId())
       .append(getProfileId())
+      .append(getDate())
+      .append(getName())
       .append(getPost())
       .append(getContent())
       .toString()
@@ -84,6 +102,8 @@ public final class Comment implements Model {
       .append("Comment {")
       .append("id=" + String.valueOf(getId()) + ", ")
       .append("profileID=" + String.valueOf(getProfileId()) + ", ")
+      .append("date=" + String.valueOf(getDate()) + ", ")
+      .append("name=" + String.valueOf(getName()) + ", ")
       .append("post=" + String.valueOf(getPost()) + ", ")
       .append("content=" + String.valueOf(getContent()))
       .append("}")
@@ -117,6 +137,8 @@ public final class Comment implements Model {
       id,
       null,
       null,
+      null,
+      null,
       null
     );
   }
@@ -124,11 +146,23 @@ public final class Comment implements Model {
   public CopyOfBuilder copyOfBuilder() {
     return new CopyOfBuilder(id,
       profileID,
+      date,
+      name,
       post,
       content);
   }
   public interface ProfileIdStep {
-    ContentStep profileId(String profileId);
+    DateStep profileId(String profileId);
+  }
+  
+
+  public interface DateStep {
+    NameStep date(String date);
+  }
+  
+
+  public interface NameStep {
+    ContentStep name(String name);
   }
   
 
@@ -144,9 +178,11 @@ public final class Comment implements Model {
   }
   
 
-  public static class Builder implements ProfileIdStep, ContentStep, BuildStep {
+  public static class Builder implements ProfileIdStep, DateStep, NameStep, ContentStep, BuildStep {
     private String id;
     private String profileID;
+    private String date;
+    private String name;
     private String content;
     private Post post;
     @Override
@@ -156,14 +192,30 @@ public final class Comment implements Model {
         return new Comment(
           id,
           profileID,
+          date,
+          name,
           post,
           content);
     }
     
     @Override
-     public ContentStep profileId(String profileId) {
+     public DateStep profileId(String profileId) {
         Objects.requireNonNull(profileId);
         this.profileID = profileId;
+        return this;
+    }
+    
+    @Override
+     public NameStep date(String date) {
+        Objects.requireNonNull(date);
+        this.date = date;
+        return this;
+    }
+    
+    @Override
+     public ContentStep name(String name) {
+        Objects.requireNonNull(name);
+        this.name = name;
         return this;
     }
     
@@ -203,9 +255,11 @@ public final class Comment implements Model {
   
 
   public final class CopyOfBuilder extends Builder {
-    private CopyOfBuilder(String id, String profileId, Post post, String content) {
+    private CopyOfBuilder(String id, String profileId, String date, String name, Post post, String content) {
       super.id(id);
       super.profileId(profileId)
+        .date(date)
+        .name(name)
         .content(content)
         .post(post);
     }
@@ -213,6 +267,16 @@ public final class Comment implements Model {
     @Override
      public CopyOfBuilder profileId(String profileId) {
       return (CopyOfBuilder) super.profileId(profileId);
+    }
+    
+    @Override
+     public CopyOfBuilder date(String date) {
+      return (CopyOfBuilder) super.date(date);
+    }
+    
+    @Override
+     public CopyOfBuilder name(String name) {
+      return (CopyOfBuilder) super.name(name);
     }
     
     @Override

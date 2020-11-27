@@ -8,14 +8,14 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import bo.young.bonews.R
 import com.amplifyframework.datastore.generated.model.PostPermission
-import kotlinx.android.synthetic.main.userid_list_item.view.*
+import kotlinx.android.synthetic.main.list_item_username.view.*
 
 class PermissionAdapter(val items: ArrayList<PostPermission>, val context: Context) :
     RecyclerView.Adapter<PermissionAdapter.ViewHolder>() {
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val usernameTextView: TextView = view.item_permission_text_username
-        val isPostableTextView : TextView = view.item_permission_text_isPostable
+        val usernameTextView: TextView = view.item_username_text_username
+        val isPostableTextView : TextView = view.item_username_text_isPostable
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {

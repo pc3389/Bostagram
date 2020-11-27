@@ -27,26 +27,47 @@ class LoginActivity : AppCompatActivity() {
 
         Amplify.Auth.fetchAuthSession(
             { result ->
-                if (result.isSignedIn && Amplify.Auth.currentUser.username == "guest") {
-                    Amplify.Auth.signOut(
-                        {
-                            Log.i("MyAmplifyApp", "Signed out successfully")
-                        },
-                        { error ->
-                            runOnUiThread {
-                                Toast.makeText(
-                                    context,
-                                    error.recoverySuggestion,
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            }
+                if (result.isSignedIn ) {
+                    when {
+                        Amplify.Auth.currentUser == null -> {
+                            Amplify.Auth.signOut(
+                                    {
+                                        Log.i("MyAmplifyApp", "Signed out successfully")
+                                    },
+                                    { error ->
+                                        runOnUiThread {
+                                            Toast.makeText(
+                                                    context,
+                                                    error.recoverySuggestion,
+                                                    Toast.LENGTH_SHORT
+                                            ).show()
+                                        }
+                                    })
                         }
-                    )
-                } else if (result.isSignedIn) {
-                    loginAct_progressbar.visibility = View.VISIBLE
-                    loginAct_layout_all.visibility = View.GONE
-                    startMainActivity()
-                    finish()
+                        Amplify.Auth.currentUser.username == "guest" -> {
+
+                            Amplify.Auth.signOut(
+                                    {
+                                        Log.i("MyAmplifyApp", "Signed out successfully")
+                                    },
+                                    { error ->
+                                        runOnUiThread {
+                                            Toast.makeText(
+                                                    context,
+                                                    error.recoverySuggestion,
+                                                    Toast.LENGTH_SHORT
+                                            ).show()
+                                        }
+                                    })
+                        }
+                        else -> runOnUiThread{
+                            loginAct_progressbar.visibility = View.VISIBLE
+                            loginAct_layout_all.visibility = View.GONE
+                            val username: String = Amplify.Auth.currentUser.username
+                            startMainActivity(username)
+                            finish()
+                        }
+                    }
                 }
                 Log.i("MyAmplifyApp", result.toString())
                 setupUI()
@@ -59,7 +80,7 @@ class LoginActivity : AppCompatActivity() {
 
     private fun setupUI() {
         loginAct_text_guest_bt.setOnClickListener {
-            CoroutineScope(IO).launch { logIn("guest", "djaak123") }
+            CoroutineScope(IO).launch { logIn("guest", "guest123") }
         }
 
         loginAct_text_signUp_bt.setOnClickListener {
@@ -97,7 +118,7 @@ class LoginActivity : AppCompatActivity() {
                 username,
                 password,
                 {
-                    startMainActivity()
+                    startMainActivity(username)
                     Log.i("MyAmplifyApp", "login")
                     finish()
                 },
@@ -123,8 +144,10 @@ class LoginActivity : AppCompatActivity() {
 
     }
 
-    private fun startMainActivity() {
-        val intent = Intent(this, MainActivity::class.java)
+    private fun startMainActivity(username: String) {
+        val intent = Intent(this, MainActivity::class.java).apply{
+            putExtra(Constants.KEY_USERNAME, username)
+        }
         startActivity(intent)
     }
 

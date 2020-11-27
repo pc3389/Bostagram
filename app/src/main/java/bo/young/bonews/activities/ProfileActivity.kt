@@ -50,6 +50,7 @@ class ProfileActivity : AppCompatActivity() {
         private val posts: ArrayList<Post> = ArrayList()
         private var postNumber = 0
         private var hasProfile = false
+        private var hasImage = false
     }
 
 
@@ -60,21 +61,17 @@ class ProfileActivity : AppCompatActivity() {
         val profileId = intent.getStringExtra(Constants.PROFILE_ID)
         CoroutineScope(Main).launch {
             showProgressBar()
-            val a = CoroutineScope(IO).launch {
-                if (profileId != null) {
-                    queryProfile(profileId)
-                } else {
-                    withContext(Main) {
-                        hideProgressBar()
-                        Toast.makeText(context, "Please create your profile", Toast.LENGTH_SHORT)
-                                .show()
-                        showEditProfile()
-                    }
-                }
+            if (profileId != null) {
+                queryProfile(profileId)
+                getEmail()
+            } else {
+                hideProgressBar()
+                Toast.makeText(context, "Please create your profile", Toast.LENGTH_SHORT)
+                        .show()
+                showEditProfile()
             }
 
             val username = getUsername()
-
             profAct_text_username.text = username
         }
 
@@ -100,7 +97,7 @@ class ProfileActivity : AppCompatActivity() {
                     getImageKey(username)
                 } else null
                 val email = profAct_text_email.text.toString()
-                saveProfile(file, username, name, email, imageKey)
+                updateProfile(file, username, name, email, imageKey, hasImage)
                 showProgressBar()
                 hideEditProfile()
             }
@@ -138,34 +135,32 @@ class ProfileActivity : AppCompatActivity() {
         )
     }
 
-    private suspend fun queryProfile(profileId: String) {
-        withContext(IO) {
-            Amplify.API.query(
-                    ModelQuery.list(Profile::class.java, Profile.ID.contains(profileId)),
-                    { response ->
-                        for (profile in response.data) {
-                            profiles.add(profile)
-                            Log.i("MyAmplifyApp", profile.username)
-                        }
-                        if (profiles.isNotEmpty()) {
-                            CoroutineScope(Main).launch {
-                                updateUI(profiles[0])
-                                hasProfile = true
+    private suspend fun queryProfile(profileId: String) = withContext(IO) {
+        Amplify.API.query(
+                ModelQuery.list(Profile::class.java, Profile.ID.contains(profileId)),
+                { response ->
+                    for (profile in response.data) {
+                        profiles.add(profile)
+                        Log.i("MyAmplifyApp", profile.username)
+                    }
+                    if (profiles.isNotEmpty()) {
+                        CoroutineScope(Main).launch {
+                            updateUI(profiles[0])
+                            hasProfile = true
+                            hasImage = profiles[0].hasImage
 
-                                if (profiles.size == 0) {
-                                    Toast.makeText(context, "Error", Toast.LENGTH_SHORT).show()
-                                } else {
-                                    setupRecycler(profiles[0].id)
-                                }
+                            if (profiles.size == 0) {
+                                Toast.makeText(context, "Error", Toast.LENGTH_SHORT).show()
+                            } else {
+                                setupRecycler(profileId)
                             }
                         }
+                    }
 
-                        hideProgressBar()
-                    },
-                    { error -> Log.e("MyAmplifyApp", "Query failure", error) }
-            )
-        }
-
+                    hideProgressBar()
+                },
+                { error -> Log.e("MyAmplifyApp", "Query failure", error) }
+        )
     }
 
     private suspend fun updateUI(profile: Profile) = withContext(Main) {
@@ -173,19 +168,22 @@ class ProfileActivity : AppCompatActivity() {
         if (profile.profileImage != null && !isDestroyed) {
             val profileImage = profile.profileImage
             val file = File("$cacheDir/$profileImage")
-            loadProfileImage(file, profileImage)
+            if(hasImage) {
+                loadProfileImage(file, profileImage)
+            }
         }
     }
 
-    private suspend fun saveProfile(
+    private suspend fun updateProfile(
             file: File?,
             username: String,
             name: String,
             email: String,
-            imageKey: String?
+            imageKey: String?,
+            hasImage: Boolean
     ) =
             withContext(IO) {
-                if (imageKey != null) {
+                if (imageKey != null && hasImage) {
                     imageToS3(file, imageKey)
                 }
 
@@ -194,6 +192,7 @@ class ProfileActivity : AppCompatActivity() {
                         .nickname(name)
                         .emailAddress(email)
                         .profileImage(imageKey)
+                        .hasImage(hasImage)
                         .build()
 
                 Amplify.API.mutate(
@@ -354,19 +353,20 @@ class ProfileActivity : AppCompatActivity() {
             Glide.with(this)
                     .load(data?.data)
                     .into(profAct_image_profile_image)
+            hasImage = true
         }
         super.onActivityResult(requestCode, resultCode, data)
     }
 
-    private fun setupRecycler(profileId: String) {
+    private fun setupRecycler(profileIdCurrentUser: String) {
         val linearLayoutManager = LinearLayoutManager(context)
         profAct_rc_post.layoutManager = linearLayoutManager
         CoroutineScope(Main).launch {
-            queryPost(profileId)
+            queryPost(profileIdCurrentUser)
         }
     }
 
-    private suspend fun queryPost(profileId: String) = withContext(Default) {
+    private suspend fun queryPost(profileIdCurrentUser: String) = withContext(Default) {
         withContext(Default) {
             for (postItem in profiles[0].posts) {
                 posts.add(postItem)
@@ -375,8 +375,8 @@ class ProfileActivity : AppCompatActivity() {
         }
         withContext(Main) {
             val fivePosts = getFivePosts(posts)
-            profAct_rc_post.adapter = PostAdapter(fivePosts, context, profileId)
-            pageHelper(profileId, posts)
+            profAct_rc_post.adapter = PostAdapter(fivePosts, context, profileIdCurrentUser)
+            pageHelper(posts, profileIdCurrentUser)
         }
     }
 
@@ -394,7 +394,7 @@ class ProfileActivity : AppCompatActivity() {
         return fivePosts
     }
 
-    private fun pageHelper(username: String?, posts: ArrayList<Post>) {
+    private fun pageHelper(posts: ArrayList<Post>, profileIdCurrentUser: String) {
         if (postNumber - 5 <= 0) {
             Glide.with(context)
                     .load(R.drawable.previous_page_unavailable_24)
@@ -441,12 +441,10 @@ class ProfileActivity : AppCompatActivity() {
                                 isFirstResource: Boolean
                         ): Boolean {
                             profAct_frame_previous_page.setOnClickListener {
-                                if (username != null) {
-                                    postNumber -= 10
-                                    val fivePosts = getFivePosts(posts)
-                                    profAct_rc_post.adapter = PostAdapter(fivePosts, context, username)
-                                    pageHelper(username, posts)
-                                }
+                                postNumber -= 10
+                                val fivePosts = getFivePosts(posts)
+                                profAct_rc_post.adapter = PostAdapter(fivePosts, context, profileIdCurrentUser)
+                                pageHelper(posts, profileIdCurrentUser)
                             }
                             return false
                         }
@@ -499,11 +497,9 @@ class ProfileActivity : AppCompatActivity() {
                                 isFirstResource: Boolean
                         ): Boolean {
                             profAct_frame_next_page.setOnClickListener {
-                                if (username != null) {
-                                    val fivePosts = getFivePosts(posts)
-                                    profAct_rc_post.adapter = PostAdapter(fivePosts, context, username)
-                                    pageHelper(username, posts)
-                                }
+                                val fivePosts = getFivePosts(posts)
+                                profAct_rc_post.adapter = PostAdapter(fivePosts, context, profileIdCurrentUser)
+                                pageHelper(posts, profileIdCurrentUser)
                             }
                             return false
                         }

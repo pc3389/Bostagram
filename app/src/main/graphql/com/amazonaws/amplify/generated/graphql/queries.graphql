@@ -17,6 +17,7 @@ query SyncProfiles(
       nickname
       emailAddress
       profileImage
+      hasImage
       backgroundImage
       posts {
         nextToken
@@ -39,6 +40,7 @@ query GetProfile($id: ID!) {
     nickname
     emailAddress
     profileImage
+    hasImage
     backgroundImage
     posts {
       items {
@@ -49,6 +51,7 @@ query GetProfile($id: ID!) {
         profileID
         contents
         image
+        hasImage
         _version
         _deleted
         _lastChangedAt
@@ -66,17 +69,26 @@ query GetProfile($id: ID!) {
   }
 }
 query ListProfiles(
+  $id: ID
   $filter: ModelProfileFilterInput
   $limit: Int
   $nextToken: String
+  $sortDirection: ModelSortDirection
 ) {
-  listProfiles(filter: $filter, limit: $limit, nextToken: $nextToken) {
+  listProfiles(
+    id: $id
+    filter: $filter
+    limit: $limit
+    nextToken: $nextToken
+    sortDirection: $sortDirection
+  ) {
     items {
       id
       username
       nickname
       emailAddress
       profileImage
+      hasImage
       backgroundImage
       posts {
         nextToken
@@ -112,12 +124,14 @@ query SyncPosts(
       profileID
       contents
       image
+      hasImage
       profile {
         id
         username
         nickname
         emailAddress
         profileImage
+        hasImage
         backgroundImage
         _version
         _deleted
@@ -126,10 +140,6 @@ query SyncPosts(
         updatedAt
       }
       comments {
-        nextToken
-        startedAt
-      }
-      likes {
         nextToken
         startedAt
       }
@@ -152,12 +162,14 @@ query GetPost($id: ID!) {
     profileID
     contents
     image
+    hasImage
     profile {
       id
       username
       nickname
       emailAddress
       profileImage
+      hasImage
       backgroundImage
       posts {
         nextToken
@@ -174,21 +186,9 @@ query GetPost($id: ID!) {
         id
         postID
         profileID
+        date
+        name
         content
-        _version
-        _deleted
-        _lastChangedAt
-        createdAt
-        updatedAt
-      }
-      nextToken
-      startedAt
-    }
-    likes {
-      items {
-        id
-        postID
-        profileID
         _version
         _deleted
         _lastChangedAt
@@ -219,12 +219,14 @@ query ListPosts(
       profileID
       contents
       image
+      hasImage
       profile {
         id
         username
         nickname
         emailAddress
         profileImage
+        hasImage
         backgroundImage
         _version
         _deleted
@@ -233,10 +235,6 @@ query ListPosts(
         updatedAt
       }
       comments {
-        nextToken
-        startedAt
-      }
-      likes {
         nextToken
         startedAt
       }
@@ -324,6 +322,8 @@ query SyncComments(
       id
       postID
       profileID
+      date
+      name
       post {
         id
         title
@@ -332,6 +332,7 @@ query SyncComments(
         profileID
         contents
         image
+        hasImage
         _version
         _deleted
         _lastChangedAt
@@ -354,6 +355,8 @@ query GetComment($id: ID!) {
     id
     postID
     profileID
+    date
+    name
     post {
       id
       title
@@ -362,12 +365,14 @@ query GetComment($id: ID!) {
       profileID
       contents
       image
+      hasImage
       profile {
         id
         username
         nickname
         emailAddress
         profileImage
+        hasImage
         backgroundImage
         _version
         _deleted
@@ -376,10 +381,6 @@ query GetComment($id: ID!) {
         updatedAt
       }
       comments {
-        nextToken
-        startedAt
-      }
-      likes {
         nextToken
         startedAt
       }
@@ -407,6 +408,8 @@ query ListComments(
       id
       postID
       profileID
+      date
+      name
       post {
         id
         title
@@ -415,6 +418,7 @@ query ListComments(
         profileID
         contents
         image
+        hasImage
         _version
         _deleted
         _lastChangedAt
@@ -422,127 +426,6 @@ query ListComments(
         updatedAt
       }
       content
-      _version
-      _deleted
-      _lastChangedAt
-      createdAt
-      updatedAt
-    }
-    nextToken
-    startedAt
-  }
-}
-query SyncLikes(
-  $filter: ModelLikeFilterInput
-  $limit: Int
-  $nextToken: String
-  $lastSync: AWSTimestamp
-) {
-  syncLikes(
-    filter: $filter
-    limit: $limit
-    nextToken: $nextToken
-    lastSync: $lastSync
-  ) {
-    items {
-      id
-      postID
-      profileID
-      post {
-        id
-        title
-        status
-        date
-        profileID
-        contents
-        image
-        _version
-        _deleted
-        _lastChangedAt
-        createdAt
-        updatedAt
-      }
-      _version
-      _deleted
-      _lastChangedAt
-      createdAt
-      updatedAt
-    }
-    nextToken
-    startedAt
-  }
-}
-query GetLike($id: ID!) {
-  getLike(id: $id) {
-    id
-    postID
-    profileID
-    post {
-      id
-      title
-      status
-      date
-      profileID
-      contents
-      image
-      profile {
-        id
-        username
-        nickname
-        emailAddress
-        profileImage
-        backgroundImage
-        _version
-        _deleted
-        _lastChangedAt
-        createdAt
-        updatedAt
-      }
-      comments {
-        nextToken
-        startedAt
-      }
-      likes {
-        nextToken
-        startedAt
-      }
-      _version
-      _deleted
-      _lastChangedAt
-      createdAt
-      updatedAt
-    }
-    _version
-    _deleted
-    _lastChangedAt
-    createdAt
-    updatedAt
-  }
-}
-query ListLikes(
-  $filter: ModelLikeFilterInput
-  $limit: Int
-  $nextToken: String
-) {
-  listLikes(filter: $filter, limit: $limit, nextToken: $nextToken) {
-    items {
-      id
-      postID
-      profileID
-      post {
-        id
-        title
-        status
-        date
-        profileID
-        contents
-        image
-        _version
-        _deleted
-        _lastChangedAt
-        createdAt
-        updatedAt
-      }
       _version
       _deleted
       _lastChangedAt

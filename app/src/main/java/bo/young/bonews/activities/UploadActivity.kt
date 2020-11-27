@@ -75,7 +75,7 @@ class UploadActivity : AppCompatActivity() {
                     val content = uploadAct_edit_content.text.toString()
                     if (profileList.size != 0) {
                         val profile = profileList[0]
-                        post(file, title, content, PostStatus.PUBLISHED, imageKey, profile)
+                        uploadPost(file, title, content, PostStatus.PUBLISHED, imageKey, profile)
                     }
                 }
             }
@@ -88,29 +88,27 @@ class UploadActivity : AppCompatActivity() {
 
     private suspend fun queryProfile(profileId: String) = withContext(IO) {
         Amplify.API.query(
-            ModelQuery.list(Profile::class.java, Profile.ID.contains(profileId)),
-            { response ->
-                for (profileItem in response.data) {
-                    if (profileItem.id == profileId) {
-                        profileList.add(profileItem)
-                        Log.i("MyAmplifyApp", profileItem.username + "is added")
+                ModelQuery.get(Profile::class.java, profileId),
+                { response ->
+                        if (response.data.id == profileId) {
+                            profileList.add(response.data)
+                            Log.i("MyAmplifyApp", response.data.username + "is added")
+                        }
+                    turnOffProgressBar()
+                },
+                { error ->
+                    Log.e("MyAmplifyApp", "Query failure", error)
+                    runOnUiThread {
+                        turnOffProgressBar()
                     }
                 }
-                turnOffProgressBar()
-            },
-            { error ->
-                Log.e("MyAmplifyApp", "Query failure", error)
-                runOnUiThread {
-                    turnOffProgressBar()
-                }
-            }
         )
     }
 
     private fun getImage() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) ==
-                PackageManager.PERMISSION_DENIED
+                    PackageManager.PERMISSION_DENIED
             ) {
                 //permission denied
                 val permissions = arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE);
@@ -127,14 +125,14 @@ class UploadActivity : AppCompatActivity() {
     }
 
     override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
+            requestCode: Int,
+            permissions: Array<out String>,
+            grantResults: IntArray
     ) {
         when (requestCode) {
             Constants.PERMISSION_CODE -> {
                 if (grantResults.isNotEmpty() && grantResults[0] ==
-                    PackageManager.PERMISSION_GRANTED
+                        PackageManager.PERMISSION_GRANTED
                 ) {
                     //permission from popup granted
                     pickImageFromGallery()
@@ -161,45 +159,46 @@ class UploadActivity : AppCompatActivity() {
                 file = File(uploadHelper.getRealPath(this, data?.data!!))
             }
             Glide.with(this)
-                .load(data?.data)
-                .into(uploadAct_image_postImage)
+                    .load(data?.data)
+                    .into(uploadAct_image_postImage)
             hasImage = true
         }
         super.onActivityResult(requestCode, resultCode, data)
     }
 
-    private suspend fun post(
-        file: File?,
-        title: String,
-        content: String,
-        status: PostStatus,
-        imageKey: String?,
-        profile: Profile
+    private suspend fun uploadPost(
+            file: File?,
+            title: String,
+            content: String,
+            status: PostStatus,
+            imageKey: String?,
+            profile: Profile,
     ) =
-        withContext(IO) {
-            if (file != null && imageKey != null) {
-                imageToS3(file, imageKey)
+            withContext(IO) {
+                if (file != null && imageKey != null && hasImage) {
+                    imageToS3(file, imageKey)
+                }
+
+                val post = Post.builder()
+                        .title(title)
+                        .status(status)
+                        .date(getTodayDate())
+                        .profile(profile)
+                        .contents(content)
+                        .image(imageKey)
+                        .hasImage(hasImage)
+                        .build()
+
+
+                Amplify.API.mutate(
+                        ModelMutation.create(post),
+                        { response ->
+                            Log.i("MyAmplifyApp", "Todo with id: " + response.data.id)
+                            finish()
+                        },
+                        { error -> Log.e("MyAmplifyApp", "Create failed", error) }
+                )
             }
-
-            val post = Post.builder()
-                .title(title)
-                .status(status)
-                .date(todayDate())
-                .profile(profile)
-                .contents(content)
-                .image(imageKey)
-                .build()
-
-
-            Amplify.API.mutate(
-                ModelMutation.create(post),
-                { response ->
-                    Log.i("MyAmplifyApp", "Todo with id: " + response.data.id)
-                    finish()
-                },
-                { error -> Log.e("MyAmplifyApp", "Create failed", error) }
-            )
-        }
 
     private suspend fun getUsername(): String = withContext(IO) {
         return@withContext Amplify.Auth.currentUser.username
@@ -213,7 +212,7 @@ class UploadActivity : AppCompatActivity() {
         return@withContext builder.toString()
     }
 
-    private fun todayDate(): String {
+    private fun getTodayDate(): String {
         val sdf = SimpleDateFormat("yyyy. MM. dd. HH:mm")
         return sdf.format(Date())
     }
@@ -221,22 +220,22 @@ class UploadActivity : AppCompatActivity() {
     private suspend fun imageToS3(file: File?, imageKey: String) = withContext(IO) {
         if (file != null) {
             Amplify.Storage.uploadFile(
-                imageKey,
-                file,
-                StorageUploadFileOptions.defaultInstance(),
-                { result: StorageUploadFileResult ->
-                    Log.i(
-                        "MyAmplifyApp",
-                        "Successfully uploaded: " + result.key
-                    )
-                },
-                { error: StorageException? ->
-                    Log.e(
-                        "MyAmplifyApp",
-                        "Upload failed",
-                        error
-                    )
-                }
+                    imageKey,
+                    file,
+                    StorageUploadFileOptions.defaultInstance(),
+                    { result: StorageUploadFileResult ->
+                        Log.i(
+                                "MyAmplifyApp",
+                                "Successfully uploaded: " + result.key
+                        )
+                    },
+                    { error: StorageException? ->
+                        Log.e(
+                                "MyAmplifyApp",
+                                "Upload failed",
+                                error
+                        )
+                    }
             )
         }
     }

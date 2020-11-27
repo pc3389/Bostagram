@@ -13,12 +13,12 @@ import bo.young.bonews.activities.PostActivity
 import bo.young.bonews.utilities.Constants
 import com.amplifyframework.datastore.generated.model.Post
 import com.bumptech.glide.Glide
-import kotlinx.android.synthetic.main.post_list_item.view.*
+import kotlinx.android.synthetic.main.list_item_post.view.*
 import kotlinx.coroutines.*
 import java.io.File
 
-class PostAdapter(private val items: ArrayList<Post>, val context: Context, val username: String) :
-    RecyclerView.Adapter<PostAdapter.ViewHolder>() {
+class PostAdapter(private val items: ArrayList<Post>, val context: Context, private val profileIdCurrentUser: String) :
+        RecyclerView.Adapter<PostAdapter.ViewHolder>() {
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val dateTextView: TextView = view.item_post_text_date
@@ -29,11 +29,11 @@ class PostAdapter(private val items: ArrayList<Post>, val context: Context, val 
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         return ViewHolder(
-            LayoutInflater.from(context).inflate(
-                R.layout.list_item_post,
-                parent,
-                false
-            )
+                LayoutInflater.from(context).inflate(
+                        R.layout.list_item_post,
+                        parent,
+                        false
+                )
         )
     }
 
@@ -60,6 +60,7 @@ class PostAdapter(private val items: ArrayList<Post>, val context: Context, val 
             }
             holder.itemView.setOnClickListener {
                 val intent = Intent(context, PostActivity::class.java).apply {
+                    putExtra(Constants.PROFILE_ID_CURRENTUSER, profileIdCurrentUser)
                     putExtra(Constants.PROFILE_ID, items[position].profile.id)
                     putExtra(Constants.POST_ID, items[position].id)
                 }
@@ -69,21 +70,19 @@ class PostAdapter(private val items: ArrayList<Post>, val context: Context, val 
     }
 
     private suspend fun loadImageFromS3(
-        filepath: String,
-        holder: ViewHolder
+            filepath: String,
+            holder: ViewHolder,
     ) =
-        withContext(Dispatchers.Main) {
-            val file = File(filepath)
-            if (file.exists()) {
-                val glideWork = CoroutineScope(Dispatchers.Main).launch {
+            withContext(Dispatchers.Main) {
+                val file = File(filepath)
+                if (file.exists()) {
                     Glide.with(context)
-                        .load(file)
-                        .into(holder.imageImageView)
+                            .load(file)
+                            .into(holder.imageImageView)
+                } else {
+                    holder.imageImageView.visibility = View.GONE
                 }
-            } else {
-                holder.imageImageView.visibility = View.GONE
             }
-        }
 
     override fun getItemCount(): Int {
         return items.size

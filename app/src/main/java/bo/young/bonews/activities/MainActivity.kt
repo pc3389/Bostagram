@@ -36,21 +36,22 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
+        val username = intent.getStringExtra(Constants.KEY_USERNAME)
         coroutineScope.launch {
             showProgressBar()
-            val username = getUsername()
             val linearLayoutManager = LinearLayoutManager(context)
             mainAct_rc_posts.layoutManager = linearLayoutManager
-            getPostPermission(username)
-            queryProfile(username)
+            if (username != null) {
+                getPostPermission(username)
+                queryProfile(username)
+            }
         }
 
         mainAct_itemsswipetorefresh.setProgressBackgroundColorSchemeColor(
-            ContextCompat.getColor(
-                this,
-                R.color.purple_200
-            )
+                ContextCompat.getColor(
+                        this,
+                        R.color.purple_200
+                )
         )
 
         mainAct_itemsswipetorefresh.setColorSchemeColors(Color.WHITE)
@@ -58,7 +59,9 @@ class MainActivity : AppCompatActivity() {
         mainAct_itemsswipetorefresh.setOnRefreshListener {
             showProgressBar()
             coroutineScope.launch {
-                queryPost()
+                if (username != null) {
+                    queryProfile(username)
+                }
             }
         }
 
@@ -75,7 +78,7 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         showProgressBar()
         CoroutineScope(Main).launch {
-            queryPost()
+            queryProfile(getUsername())
         }
         super.onResume()
     }
@@ -90,72 +93,76 @@ class MainActivity : AppCompatActivity() {
 
     private suspend fun queryProfile(username: String) = withContext(IO) {
         Amplify.API.query(
-            ModelQuery.list(Profile::class.java, Profile.USERNAME.contains(username)),
-            { response ->
-                for (profileItem in response.data) {
-                    if (profileItem != null) {
-                        if (profileItem.username == username) {
-                            profile.add(profileItem)
+                ModelQuery.list(Profile::class.java, Profile.USERNAME.contains(username)),
+                { response ->
+                    if (response.data == null) {
+                        startProfileActivity()
+                    }
+                    for (profileItem in response.data) {
+                        if (profileItem != null) {
+                            if (profileItem.username == username) {
+                                profile.add(profileItem)
+                            }
+                            Log.i("MyAmplifyApp", profileItem.username + "is added")
                         }
-                        Log.i("MyAmplifyApp", profileItem.username + "is added")
+                    }
+                    if (profile.size == 0) {
+                        startProfileActivity()
+                    } else {
+                        coroutineScope.launch {
+                            queryPost()
+                            setupMenu()
+                        }
+                    }
+
+                },
+                { error ->
+                    Log.e("MyAmplifyApp", "Query failure", error)
+                    runOnUiThread {
+                        hideProgressBar()
                     }
                 }
-                if (profile.size == 0) {
-                    startProfileActivity()
-                } else {
-                    coroutineScope.launch {
-                        queryPost()
-                        setupMenu()
-                    }
-                }
-            },
-            { error ->
-                Log.e("MyAmplifyApp", "Query failure", error)
-                runOnUiThread {
-                    hideProgressBar()
-                }
-            }
         )
     }
 
     private suspend fun queryPost() = withContext(IO) {
 
         Amplify.API.query(
-            ModelQuery.list(Post::class.java, Post.TITLE.contains("")),
-            { response ->
-                posts.clear()
-                for (post in response.data) {
-                    posts.add(post)
-                    Log.i("MyAmplifyApp", post.title)
-                }
-                CoroutineScope(Main).launch {
-                    withContext(Default) {
-                        posts.sortByDescending { it.date }
+                ModelQuery.list(Post::class.java, Post.TITLE.contains("")),
+                { response ->
+                    posts.clear()
+                    for (post in response.data) {
+                        posts.add(post)
+                        Log.i("MyAmplifyApp", post.title)
                     }
-                    mainAct_rc_posts.adapter = MainAdapters(posts, context)
-                    mainAct_itemsswipetorefresh.isRefreshing = false
-                    hideProgressBar()
+                    CoroutineScope(Main).launch {
+                        withContext(Default) {
+                            posts.sortByDescending { it.date }
+                        }
+                        mainAct_rc_posts.adapter = MainAdapters(posts, context, profile[0].id)
+                        mainAct_itemsswipetorefresh.isRefreshing = false
+                        hideProgressBar()
+                    }
+                },
+                { error ->
+                    Log.e("MyAmplifyApp", "Query failure", error)
+                    runOnUiThread {
+                        hideProgressBar()
+                    }
                 }
-            },
-            { error ->
-                Log.e("MyAmplifyApp", "Query failure", error)
-                runOnUiThread {
-                    hideProgressBar()
-                }
-            }
         )
     }
 
     private suspend fun signOut() = withContext(IO) {
         Amplify.Auth.signOut(
-            {
-                startLoginActivity()
-            },
-            { error ->
-                runOnUiThread {
-                    Toast.makeText(context, error.recoverySuggestion, Toast.LENGTH_SHORT).show()
+                {
+                    startLoginActivity()
+                },
+                { error ->
+                    runOnUiThread {
+                        Toast.makeText(context, error.recoverySuggestion, Toast.LENGTH_SHORT).show()
+                    }
                 }
-            }
         )
     }
 
@@ -170,7 +177,7 @@ class MainActivity : AppCompatActivity() {
             val popupMenu = PopupMenu(this@MainActivity, mainAct_image_menu_bt)
             popupMenu.menuInflater.inflate(R.menu.menu_main, popupMenu.menu)
             popupMenu.menu.findItem(R.id.action_providePostPermission).isVisible =
-                getUsername() == "pc3389"
+                    getUsername() == "pc3389"
             if (getUsername() == "guest") {
                 popupMenu.menu.findItem(R.id.action_profile).isVisible = false
             }
@@ -200,28 +207,28 @@ class MainActivity : AppCompatActivity() {
 
     private suspend fun getPostPermission(name: String) = withContext(IO) {
         Amplify.API.query(
-            ModelQuery.list(PostPermission::class.java, PostPermission.USERNAME.contains("")),
-            { response ->
-                var ispossible = false
-                runOnUiThread { mainAct_image_uploadPost_bt.visibility = View.GONE }
-                for (usernameItem in response.data) {
-                    if (usernameItem.username == name) {
-                        if (usernameItem.permission == true) {
-                            runOnUiThread { mainAct_image_uploadPost_bt.visibility = View.VISIBLE }
-                            ispossible = true
-                            Log.e("MyAmplifyApp", "This user can post items")
-                        } else {
-                            runOnUiThread { mainAct_image_uploadPost_bt.visibility = View.GONE }
+                ModelQuery.list(PostPermission::class.java, PostPermission.USERNAME.contains("")),
+                { response ->
+                    var ispossible = false
+                    runOnUiThread { mainAct_image_uploadPost_bt.visibility = View.GONE }
+                    for (usernameItem in response.data) {
+                        if (usernameItem.username == name) {
+                            if (usernameItem.permission == true) {
+                                runOnUiThread { mainAct_image_uploadPost_bt.visibility = View.VISIBLE }
+                                ispossible = true
+                                Log.e("MyAmplifyApp", "This user can post items")
+                            } else {
+                                runOnUiThread { mainAct_image_uploadPost_bt.visibility = View.GONE }
+                            }
                         }
                     }
+                    if (!ispossible) {
+                        Log.e("MyAmplifyApp", "This user can't post items")
+                    }
+                },
+                { error ->
+                    Log.e("MyAmplifyApp", "Query failure", error)
                 }
-                if (!ispossible) {
-                    Log.e("MyAmplifyApp", "This user can't post items")
-                }
-            },
-            { error ->
-                Log.e("MyAmplifyApp", "Query failure", error)
-            }
         )
     }
 

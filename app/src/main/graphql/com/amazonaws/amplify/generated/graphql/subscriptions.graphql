@@ -6,6 +6,7 @@ subscription OnCreateProfile {
     nickname
     emailAddress
     profileImage
+    hasImage
     backgroundImage
     posts {
       items {
@@ -16,6 +17,7 @@ subscription OnCreateProfile {
         profileID
         contents
         image
+        hasImage
         _version
         _deleted
         _lastChangedAt
@@ -39,6 +41,7 @@ subscription OnUpdateProfile {
     nickname
     emailAddress
     profileImage
+    hasImage
     backgroundImage
     posts {
       items {
@@ -49,6 +52,7 @@ subscription OnUpdateProfile {
         profileID
         contents
         image
+        hasImage
         _version
         _deleted
         _lastChangedAt
@@ -72,6 +76,7 @@ subscription OnDeleteProfile {
     nickname
     emailAddress
     profileImage
+    hasImage
     backgroundImage
     posts {
       items {
@@ -82,6 +87,7 @@ subscription OnDeleteProfile {
         profileID
         contents
         image
+        hasImage
         _version
         _deleted
         _lastChangedAt
@@ -107,12 +113,14 @@ subscription OnCreatePost {
     profileID
     contents
     image
+    hasImage
     profile {
       id
       username
       nickname
       emailAddress
       profileImage
+      hasImage
       backgroundImage
       posts {
         nextToken
@@ -129,21 +137,9 @@ subscription OnCreatePost {
         id
         postID
         profileID
+        date
+        name
         content
-        _version
-        _deleted
-        _lastChangedAt
-        createdAt
-        updatedAt
-      }
-      nextToken
-      startedAt
-    }
-    likes {
-      items {
-        id
-        postID
-        profileID
         _version
         _deleted
         _lastChangedAt
@@ -169,12 +165,14 @@ subscription OnUpdatePost {
     profileID
     contents
     image
+    hasImage
     profile {
       id
       username
       nickname
       emailAddress
       profileImage
+      hasImage
       backgroundImage
       posts {
         nextToken
@@ -191,21 +189,9 @@ subscription OnUpdatePost {
         id
         postID
         profileID
+        date
+        name
         content
-        _version
-        _deleted
-        _lastChangedAt
-        createdAt
-        updatedAt
-      }
-      nextToken
-      startedAt
-    }
-    likes {
-      items {
-        id
-        postID
-        profileID
         _version
         _deleted
         _lastChangedAt
@@ -231,12 +217,14 @@ subscription OnDeletePost {
     profileID
     contents
     image
+    hasImage
     profile {
       id
       username
       nickname
       emailAddress
       profileImage
+      hasImage
       backgroundImage
       posts {
         nextToken
@@ -253,21 +241,9 @@ subscription OnDeletePost {
         id
         postID
         profileID
+        date
+        name
         content
-        _version
-        _deleted
-        _lastChangedAt
-        createdAt
-        updatedAt
-      }
-      nextToken
-      startedAt
-    }
-    likes {
-      items {
-        id
-        postID
-        profileID
         _version
         _deleted
         _lastChangedAt
@@ -325,6 +301,8 @@ subscription OnCreateComment {
     id
     postID
     profileID
+    date
+    name
     post {
       id
       title
@@ -333,12 +311,14 @@ subscription OnCreateComment {
       profileID
       contents
       image
+      hasImage
       profile {
         id
         username
         nickname
         emailAddress
         profileImage
+        hasImage
         backgroundImage
         _version
         _deleted
@@ -347,10 +327,6 @@ subscription OnCreateComment {
         updatedAt
       }
       comments {
-        nextToken
-        startedAt
-      }
-      likes {
         nextToken
         startedAt
       }
@@ -373,6 +349,8 @@ subscription OnUpdateComment {
     id
     postID
     profileID
+    date
+    name
     post {
       id
       title
@@ -381,12 +359,14 @@ subscription OnUpdateComment {
       profileID
       contents
       image
+      hasImage
       profile {
         id
         username
         nickname
         emailAddress
         profileImage
+        hasImage
         backgroundImage
         _version
         _deleted
@@ -395,10 +375,6 @@ subscription OnUpdateComment {
         updatedAt
       }
       comments {
-        nextToken
-        startedAt
-      }
-      likes {
         nextToken
         startedAt
       }
@@ -421,6 +397,8 @@ subscription OnDeleteComment {
     id
     postID
     profileID
+    date
+    name
     post {
       id
       title
@@ -429,12 +407,14 @@ subscription OnDeleteComment {
       profileID
       contents
       image
+      hasImage
       profile {
         id
         username
         nickname
         emailAddress
         profileImage
+        hasImage
         backgroundImage
         _version
         _deleted
@@ -443,10 +423,6 @@ subscription OnDeleteComment {
         updatedAt
       }
       comments {
-        nextToken
-        startedAt
-      }
-      likes {
         nextToken
         startedAt
       }
@@ -457,147 +433,6 @@ subscription OnDeleteComment {
       updatedAt
     }
     content
-    _version
-    _deleted
-    _lastChangedAt
-    createdAt
-    updatedAt
-  }
-}
-subscription OnCreateLike {
-  onCreateLike {
-    id
-    postID
-    profileID
-    post {
-      id
-      title
-      status
-      date
-      profileID
-      contents
-      image
-      profile {
-        id
-        username
-        nickname
-        emailAddress
-        profileImage
-        backgroundImage
-        _version
-        _deleted
-        _lastChangedAt
-        createdAt
-        updatedAt
-      }
-      comments {
-        nextToken
-        startedAt
-      }
-      likes {
-        nextToken
-        startedAt
-      }
-      _version
-      _deleted
-      _lastChangedAt
-      createdAt
-      updatedAt
-    }
-    _version
-    _deleted
-    _lastChangedAt
-    createdAt
-    updatedAt
-  }
-}
-subscription OnUpdateLike {
-  onUpdateLike {
-    id
-    postID
-    profileID
-    post {
-      id
-      title
-      status
-      date
-      profileID
-      contents
-      image
-      profile {
-        id
-        username
-        nickname
-        emailAddress
-        profileImage
-        backgroundImage
-        _version
-        _deleted
-        _lastChangedAt
-        createdAt
-        updatedAt
-      }
-      comments {
-        nextToken
-        startedAt
-      }
-      likes {
-        nextToken
-        startedAt
-      }
-      _version
-      _deleted
-      _lastChangedAt
-      createdAt
-      updatedAt
-    }
-    _version
-    _deleted
-    _lastChangedAt
-    createdAt
-    updatedAt
-  }
-}
-subscription OnDeleteLike {
-  onDeleteLike {
-    id
-    postID
-    profileID
-    post {
-      id
-      title
-      status
-      date
-      profileID
-      contents
-      image
-      profile {
-        id
-        username
-        nickname
-        emailAddress
-        profileImage
-        backgroundImage
-        _version
-        _deleted
-        _lastChangedAt
-        createdAt
-        updatedAt
-      }
-      comments {
-        nextToken
-        startedAt
-      }
-      likes {
-        nextToken
-        startedAt
-      }
-      _version
-      _deleted
-      _lastChangedAt
-      createdAt
-      updatedAt
-    }
     _version
     _deleted
     _lastChangedAt

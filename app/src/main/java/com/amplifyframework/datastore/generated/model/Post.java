@@ -28,6 +28,7 @@ public final class Post implements Model {
   public static final QueryField DATE = field("date");
   public static final QueryField CONTENTS = field("contents");
   public static final QueryField IMAGE = field("image");
+  public static final QueryField HAS_IMAGE = field("hasImage");
   public static final QueryField PROFILE = field("profileID");
   private final @ModelField(targetType="ID", isRequired = true) String id;
   private final @ModelField(targetType="String", isRequired = true) String title;
@@ -35,9 +36,9 @@ public final class Post implements Model {
   private final @ModelField(targetType="String", isRequired = true) String date;
   private final @ModelField(targetType="String") String contents;
   private final @ModelField(targetType="String") String image;
+  private final @ModelField(targetType="Boolean") Boolean hasImage;
   private final @ModelField(targetType="Profile") @BelongsTo(targetName = "profileID", type = Profile.class) Profile profile;
   private final @ModelField(targetType="Comment") @HasMany(associatedWith = "post", type = Comment.class) List<Comment> comments = null;
-  private final @ModelField(targetType="Like") @HasMany(associatedWith = "post", type = Like.class) List<Like> likes = null;
   public String getId() {
       return id;
   }
@@ -62,6 +63,10 @@ public final class Post implements Model {
       return image;
   }
   
+  public Boolean getHasImage() {
+      return hasImage;
+  }
+  
   public Profile getProfile() {
       return profile;
   }
@@ -70,17 +75,14 @@ public final class Post implements Model {
       return comments;
   }
   
-  public List<Like> getLikes() {
-      return likes;
-  }
-  
-  private Post(String id, String title, PostStatus status, String date, String contents, String image, Profile profile) {
+  private Post(String id, String title, PostStatus status, String date, String contents, String image, Boolean hasImage, Profile profile) {
     this.id = id;
     this.title = title;
     this.status = status;
     this.date = date;
     this.contents = contents;
     this.image = image;
+    this.hasImage = hasImage;
     this.profile = profile;
   }
   
@@ -98,6 +100,7 @@ public final class Post implements Model {
               ObjectsCompat.equals(getDate(), post.getDate()) &&
               ObjectsCompat.equals(getContents(), post.getContents()) &&
               ObjectsCompat.equals(getImage(), post.getImage()) &&
+              ObjectsCompat.equals(getHasImage(), post.getHasImage()) &&
               ObjectsCompat.equals(getProfile(), post.getProfile());
       }
   }
@@ -111,6 +114,7 @@ public final class Post implements Model {
       .append(getDate())
       .append(getContents())
       .append(getImage())
+      .append(getHasImage())
       .append(getProfile())
       .toString()
       .hashCode();
@@ -126,6 +130,7 @@ public final class Post implements Model {
       .append("date=" + String.valueOf(getDate()) + ", ")
       .append("contents=" + String.valueOf(getContents()) + ", ")
       .append("image=" + String.valueOf(getImage()) + ", ")
+      .append("hasImage=" + String.valueOf(getHasImage()) + ", ")
       .append("profile=" + String.valueOf(getProfile()))
       .append("}")
       .toString();
@@ -161,6 +166,7 @@ public final class Post implements Model {
       null,
       null,
       null,
+      null,
       null
     );
   }
@@ -172,6 +178,7 @@ public final class Post implements Model {
       date,
       contents,
       image,
+      hasImage,
       profile);
   }
   public interface TitleStep {
@@ -194,6 +201,7 @@ public final class Post implements Model {
     BuildStep id(String id) throws IllegalArgumentException;
     BuildStep contents(String contents);
     BuildStep image(String image);
+    BuildStep hasImage(Boolean hasImage);
     BuildStep profile(Profile profile);
   }
   
@@ -205,6 +213,7 @@ public final class Post implements Model {
     private String date;
     private String contents;
     private String image;
+    private Boolean hasImage;
     private Profile profile;
     @Override
      public Post build() {
@@ -217,6 +226,7 @@ public final class Post implements Model {
           date,
           contents,
           image,
+          hasImage,
           profile);
     }
     
@@ -254,6 +264,12 @@ public final class Post implements Model {
     }
     
     @Override
+     public BuildStep hasImage(Boolean hasImage) {
+        this.hasImage = hasImage;
+        return this;
+    }
+    
+    @Override
      public BuildStep profile(Profile profile) {
         this.profile = profile;
         return this;
@@ -282,13 +298,14 @@ public final class Post implements Model {
   
 
   public final class CopyOfBuilder extends Builder {
-    private CopyOfBuilder(String id, String title, PostStatus status, String date, String contents, String image, Profile profile) {
+    private CopyOfBuilder(String id, String title, PostStatus status, String date, String contents, String image, Boolean hasImage, Profile profile) {
       super.id(id);
       super.title(title)
         .status(status)
         .date(date)
         .contents(contents)
         .image(image)
+        .hasImage(hasImage)
         .profile(profile);
     }
     
@@ -315,6 +332,11 @@ public final class Post implements Model {
     @Override
      public CopyOfBuilder image(String image) {
       return (CopyOfBuilder) super.image(image);
+    }
+    
+    @Override
+     public CopyOfBuilder hasImage(Boolean hasImage) {
+      return (CopyOfBuilder) super.hasImage(hasImage);
     }
     
     @Override
