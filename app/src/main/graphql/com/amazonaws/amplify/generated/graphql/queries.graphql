@@ -1,45 +1,22 @@
 # this is an auto generated file. This will be overwritten
-query SyncProfiles(
-  $filter: ModelProfileFilterInput
-  $limit: Int
-  $nextToken: String
-  $lastSync: AWSTimestamp
-) {
-  syncProfiles(
-    filter: $filter
-    limit: $limit
-    nextToken: $nextToken
-    lastSync: $lastSync
-  ) {
-    items {
-      id
-      username
-      nickname
-      emailAddress
-      profileImage
-      hasImage
-      backgroundImage
-      posts {
-        nextToken
-        startedAt
-      }
-      _version
-      _deleted
-      _lastChangedAt
-      createdAt
-      updatedAt
-    }
-    nextToken
-    startedAt
-  }
-}
 query GetProfile($id: ID!) {
   getProfile(id: $id) {
     id
     username
     nickname
     emailAddress
-    profileImage
+    profileImage {
+      items {
+        id
+        date
+        number
+        profileImageKey
+        profileID
+        createdAt
+        updatedAt
+      }
+      nextToken
+    }
     hasImage
     backgroundImage
     posts {
@@ -52,18 +29,11 @@ query GetProfile($id: ID!) {
         contents
         image
         hasImage
-        _version
-        _deleted
-        _lastChangedAt
         createdAt
         updatedAt
       }
       nextToken
-      startedAt
     }
-    _version
-    _deleted
-    _lastChangedAt
     createdAt
     updatedAt
   }
@@ -87,70 +57,73 @@ query ListProfiles(
       username
       nickname
       emailAddress
-      profileImage
+      profileImage {
+        nextToken
+      }
       hasImage
       backgroundImage
       posts {
         nextToken
-        startedAt
       }
-      _version
-      _deleted
-      _lastChangedAt
       createdAt
       updatedAt
     }
     nextToken
-    startedAt
   }
 }
-query SyncPosts(
-  $filter: ModelPostFilterInput
+query GetProfileImage($id: ID!) {
+  getProfileImage(id: $id) {
+    id
+    date
+    number
+    profileImageKey
+    profileID
+    profile {
+      id
+      username
+      nickname
+      emailAddress
+      profileImage {
+        nextToken
+      }
+      hasImage
+      backgroundImage
+      posts {
+        nextToken
+      }
+      createdAt
+      updatedAt
+    }
+    createdAt
+    updatedAt
+  }
+}
+query ListProfileImages(
+  $filter: ModelProfileImageFilterInput
   $limit: Int
   $nextToken: String
-  $lastSync: AWSTimestamp
 ) {
-  syncPosts(
-    filter: $filter
-    limit: $limit
-    nextToken: $nextToken
-    lastSync: $lastSync
-  ) {
+  listProfileImages(filter: $filter, limit: $limit, nextToken: $nextToken) {
     items {
       id
-      title
-      status
       date
+      number
+      profileImageKey
       profileID
-      contents
-      image
-      hasImage
       profile {
         id
         username
         nickname
         emailAddress
-        profileImage
         hasImage
         backgroundImage
-        _version
-        _deleted
-        _lastChangedAt
         createdAt
         updatedAt
       }
-      comments {
-        nextToken
-        startedAt
-      }
-      _version
-      _deleted
-      _lastChangedAt
       createdAt
       updatedAt
     }
     nextToken
-    startedAt
   }
 }
 query GetPost($id: ID!) {
@@ -168,16 +141,14 @@ query GetPost($id: ID!) {
       username
       nickname
       emailAddress
-      profileImage
+      profileImage {
+        nextToken
+      }
       hasImage
       backgroundImage
       posts {
         nextToken
-        startedAt
       }
-      _version
-      _deleted
-      _lastChangedAt
       createdAt
       updatedAt
     }
@@ -189,18 +160,11 @@ query GetPost($id: ID!) {
         date
         name
         content
-        _version
-        _deleted
-        _lastChangedAt
         createdAt
         updatedAt
       }
       nextToken
-      startedAt
     }
-    _version
-    _deleted
-    _lastChangedAt
     createdAt
     updatedAt
   }
@@ -225,53 +189,18 @@ query ListPosts(
         username
         nickname
         emailAddress
-        profileImage
         hasImage
         backgroundImage
-        _version
-        _deleted
-        _lastChangedAt
         createdAt
         updatedAt
       }
       comments {
         nextToken
-        startedAt
       }
-      _version
-      _deleted
-      _lastChangedAt
       createdAt
       updatedAt
     }
     nextToken
-    startedAt
-  }
-}
-query SyncPostPermissions(
-  $filter: ModelPostPermissionFilterInput
-  $limit: Int
-  $nextToken: String
-  $lastSync: AWSTimestamp
-) {
-  syncPostPermissions(
-    filter: $filter
-    limit: $limit
-    nextToken: $nextToken
-    lastSync: $lastSync
-  ) {
-    items {
-      id
-      username
-      permission
-      _version
-      _deleted
-      _lastChangedAt
-      createdAt
-      updatedAt
-    }
-    nextToken
-    startedAt
   }
 }
 query GetPostPermission($id: ID!) {
@@ -279,9 +208,6 @@ query GetPostPermission($id: ID!) {
     id
     username
     permission
-    _version
-    _deleted
-    _lastChangedAt
     createdAt
     updatedAt
   }
@@ -296,58 +222,10 @@ query ListPostPermissions(
       id
       username
       permission
-      _version
-      _deleted
-      _lastChangedAt
       createdAt
       updatedAt
     }
     nextToken
-    startedAt
-  }
-}
-query SyncComments(
-  $filter: ModelCommentFilterInput
-  $limit: Int
-  $nextToken: String
-  $lastSync: AWSTimestamp
-) {
-  syncComments(
-    filter: $filter
-    limit: $limit
-    nextToken: $nextToken
-    lastSync: $lastSync
-  ) {
-    items {
-      id
-      postID
-      profileID
-      date
-      name
-      post {
-        id
-        title
-        status
-        date
-        profileID
-        contents
-        image
-        hasImage
-        _version
-        _deleted
-        _lastChangedAt
-        createdAt
-        updatedAt
-      }
-      content
-      _version
-      _deleted
-      _lastChangedAt
-      createdAt
-      updatedAt
-    }
-    nextToken
-    startedAt
   }
 }
 query GetComment($id: ID!) {
@@ -371,29 +249,18 @@ query GetComment($id: ID!) {
         username
         nickname
         emailAddress
-        profileImage
         hasImage
         backgroundImage
-        _version
-        _deleted
-        _lastChangedAt
         createdAt
         updatedAt
       }
       comments {
         nextToken
-        startedAt
       }
-      _version
-      _deleted
-      _lastChangedAt
       createdAt
       updatedAt
     }
     content
-    _version
-    _deleted
-    _lastChangedAt
     createdAt
     updatedAt
   }
@@ -419,20 +286,13 @@ query ListComments(
         contents
         image
         hasImage
-        _version
-        _deleted
-        _lastChangedAt
         createdAt
         updatedAt
       }
       content
-      _version
-      _deleted
-      _lastChangedAt
       createdAt
       updatedAt
     }
     nextToken
-    startedAt
   }
 }

@@ -3,10 +3,19 @@ type Profile @model @key(fields:["id"]){
   username: String!
   nickname: String!
   emailAddress:String!
-  profileImage: String
+  profileImage: [ProfileImage] @connection(keyName: "byProfile", fields: ["id"])
   hasImage: Boolean
   backgroundImage: String
   posts: [Post] @connection(keyName: "byProfile", fields: ["id"])
+}
+
+type ProfileImage @model @key(name: "byProfile", fields: ["profileID"]) {
+  id: ID!
+  date: String!
+  number: Int!
+  profileImageKey: String!
+  profileID: ID!
+  profile: Profile @connection(fields: ["profileID"])
 }
 
 type Post @model @key(name: "byProfile", fields: ["profileID"]) {

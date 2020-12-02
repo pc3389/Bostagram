@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="?android:windowBackground"
     tools:context=".activities.MainActivity">
 
 
@@ -18,6 +19,7 @@
         android:id="@+id/mainAct_layout_toolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="?attr/colorPrimary"
         app:layout_constraintTop_toTopOf="parent">
 
         <TextView
@@ -27,6 +29,7 @@
             android:contentDescription="@string/back_button"
             android:gravity="center"
             android:paddingHorizontal="20dp"
+            android:textColor="?attr/colorOnPrimary"
             android:text="Posts"
             android:textSize="@dimen/toolbar_text_size"
             app:layout_constraintBottom_toBottomOf="@id/mainAct_image_search_bt"
@@ -83,7 +86,9 @@
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/mainAct_rc_posts"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="match_parent"
+            android:background="?android:windowBackground"/>
+
 
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="?android:windowBackground"
     tools:context=".activities.UploadActivity">
 
     <ProgressBar
@@ -24,14 +25,16 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
+            app:layout_constraintTop_toTopOf="parent"
+            android:background="?attr/colorPrimary">
 
             <TextView
                 android:id="@+id/uploadAct_text_back_bt"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:paddingHorizontal="20dp"
-                android:paddingTop="10dp"
+                android:textColor="?attr/colorOnPrimary"
+                android:paddingVertical="10dp"
                 android:text="Back"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
@@ -40,8 +43,9 @@
                 android:id="@+id/uploadAct_text_save"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:textColor="?attr/colorOnPrimary"
                 android:paddingHorizontal="20dp"
-                android:paddingTop="10dp"
+                android:paddingVertical="10dp"
                 android:text="Post"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
@@ -106,12 +110,14 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent">
+            app:layout_constraintStart_toStartOf="parent"
+            android:background="?attr/colorPrimary">
 
             <TextView
                 android:id="@+id/uploadAct_text_add_photo_bt"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:textColor="?attr/colorOnPrimary"
                 android:paddingHorizontal="20dp"
                 android:paddingVertical="10dp"
                 android:text="Add Photo"
@@ -122,6 +128,7 @@
                 android:id="@+id/uploadAct_text_save_draft"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:textColor="?attr/colorOnPrimary"
                 android:paddingHorizontal="20dp"
                 android:paddingVertical="10dp"
                 android:text="Save Draft"

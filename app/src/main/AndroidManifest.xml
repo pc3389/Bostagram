@@ -3,6 +3,10 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="bo.young.bonews">
 
+
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:name=".MyApplication"
         android:allowBackup="true"
@@ -12,18 +16,38 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.BoNews"
         tools:replace="android:name">
-        <activity android:name=".activities.CommentActivity" />
-        <activity android:name=".activities.ProvidingPostPermissionActivity" />
-        <activity android:name=".activities.PostActivity" />
-        <activity android:name=".activities.UploadActivity" />
-        <activity android:name=".activities.SettingsActivity" />
-        <activity android:name=".activities.ProfileActivity" />
-        <activity android:name=".activities.MainActivity" />
-        <activity android:name=".activities.ConfirmationActivity" />
-        <activity android:name=".activities.SignUpActivity" />
-        <activity android:name=".activities.LoginActivity">
+        <activity
+            android:name=".activities.CommentActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activities.ProvidingPostPermissionActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activities.PostActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activities.UploadActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activities.SettingsActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activities.ProfileActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activities.MainActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activities.ConfirmationActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activities.SignUpActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activities.LoginActivity"
+            android:screenOrientation="portrait">
 
-        <intent-filter>
+            <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />

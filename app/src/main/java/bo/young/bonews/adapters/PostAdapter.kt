@@ -48,7 +48,7 @@ class PostAdapter(private val items: ArrayList<Post>, val context: Context, priv
                 "0"
             } else {
                 items[position].comments.size.toString()
-            } + "Comments"
+            } + " Comments"
             holder.commentsTextView.text = numberOfComments
 
             val image = items[position].image

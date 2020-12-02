@@ -25,14 +25,13 @@ public final class Profile implements Model {
   public static final QueryField USERNAME = field("username");
   public static final QueryField NICKNAME = field("nickname");
   public static final QueryField EMAIL_ADDRESS = field("emailAddress");
-  public static final QueryField PROFILE_IMAGE = field("profileImage");
   public static final QueryField HAS_IMAGE = field("hasImage");
   public static final QueryField BACKGROUND_IMAGE = field("backgroundImage");
   private final @ModelField(targetType="ID", isRequired = true) String id;
   private final @ModelField(targetType="String", isRequired = true) String username;
   private final @ModelField(targetType="String", isRequired = true) String nickname;
   private final @ModelField(targetType="String", isRequired = true) String emailAddress;
-  private final @ModelField(targetType="String") String profileImage;
+  private final @ModelField(targetType="ProfileImage") @HasMany(associatedWith = "profile", type = ProfileImage.class) List<ProfileImage> profileImage = null;
   private final @ModelField(targetType="Boolean") Boolean hasImage;
   private final @ModelField(targetType="String") String backgroundImage;
   private final @ModelField(targetType="Post") @HasMany(associatedWith = "profile", type = Post.class) List<Post> posts = null;
@@ -52,7 +51,7 @@ public final class Profile implements Model {
       return emailAddress;
   }
   
-  public String getProfileImage() {
+  public List<ProfileImage> getProfileImage() {
       return profileImage;
   }
   
@@ -68,12 +67,11 @@ public final class Profile implements Model {
       return posts;
   }
   
-  private Profile(String id, String username, String nickname, String emailAddress, String profileImage, Boolean hasImage, String backgroundImage) {
+  private Profile(String id, String username, String nickname, String emailAddress, Boolean hasImage, String backgroundImage) {
     this.id = id;
     this.username = username;
     this.nickname = nickname;
     this.emailAddress = emailAddress;
-    this.profileImage = profileImage;
     this.hasImage = hasImage;
     this.backgroundImage = backgroundImage;
   }
@@ -90,7 +88,6 @@ public final class Profile implements Model {
               ObjectsCompat.equals(getUsername(), profile.getUsername()) &&
               ObjectsCompat.equals(getNickname(), profile.getNickname()) &&
               ObjectsCompat.equals(getEmailAddress(), profile.getEmailAddress()) &&
-              ObjectsCompat.equals(getProfileImage(), profile.getProfileImage()) &&
               ObjectsCompat.equals(getHasImage(), profile.getHasImage()) &&
               ObjectsCompat.equals(getBackgroundImage(), profile.getBackgroundImage());
       }
@@ -103,7 +100,6 @@ public final class Profile implements Model {
       .append(getUsername())
       .append(getNickname())
       .append(getEmailAddress())
-      .append(getProfileImage())
       .append(getHasImage())
       .append(getBackgroundImage())
       .toString()
@@ -118,7 +114,6 @@ public final class Profile implements Model {
       .append("username=" + String.valueOf(getUsername()) + ", ")
       .append("nickname=" + String.valueOf(getNickname()) + ", ")
       .append("emailAddress=" + String.valueOf(getEmailAddress()) + ", ")
-      .append("profileImage=" + String.valueOf(getProfileImage()) + ", ")
       .append("hasImage=" + String.valueOf(getHasImage()) + ", ")
       .append("backgroundImage=" + String.valueOf(getBackgroundImage()))
       .append("}")
@@ -154,7 +149,6 @@ public final class Profile implements Model {
       null,
       null,
       null,
-      null,
       null
     );
   }
@@ -164,7 +158,6 @@ public final class Profile implements Model {
       username,
       nickname,
       emailAddress,
-      profileImage,
       hasImage,
       backgroundImage);
   }
@@ -186,7 +179,6 @@ public final class Profile implements Model {
   public interface BuildStep {
     Profile build();
     BuildStep id(String id) throws IllegalArgumentException;
-    BuildStep profileImage(String profileImage);
     BuildStep hasImage(Boolean hasImage);
     BuildStep backgroundImage(String backgroundImage);
   }
@@ -197,7 +189,6 @@ public final class Profile implements Model {
     private String username;
     private String nickname;
     private String emailAddress;
-    private String profileImage;
     private Boolean hasImage;
     private String backgroundImage;
     @Override
@@ -209,7 +200,6 @@ public final class Profile implements Model {
           username,
           nickname,
           emailAddress,
-          profileImage,
           hasImage,
           backgroundImage);
     }
@@ -232,12 +222,6 @@ public final class Profile implements Model {
      public BuildStep emailAddress(String emailAddress) {
         Objects.requireNonNull(emailAddress);
         this.emailAddress = emailAddress;
-        return this;
-    }
-    
-    @Override
-     public BuildStep profileImage(String profileImage) {
-        this.profileImage = profileImage;
         return this;
     }
     
@@ -276,12 +260,11 @@ public final class Profile implements Model {
   
 
   public final class CopyOfBuilder extends Builder {
-    private CopyOfBuilder(String id, String username, String nickname, String emailAddress, String profileImage, Boolean hasImage, String backgroundImage) {
+    private CopyOfBuilder(String id, String username, String nickname, String emailAddress, Boolean hasImage, String backgroundImage) {
       super.id(id);
       super.username(username)
         .nickname(nickname)
         .emailAddress(emailAddress)
-        .profileImage(profileImage)
         .hasImage(hasImage)
         .backgroundImage(backgroundImage);
     }
@@ -299,11 +282,6 @@ public final class Profile implements Model {
     @Override
      public CopyOfBuilder emailAddress(String emailAddress) {
       return (CopyOfBuilder) super.emailAddress(emailAddress);
-    }
-    
-    @Override
-     public CopyOfBuilder profileImage(String profileImage) {
-      return (CopyOfBuilder) super.profileImage(profileImage);
     }
     
     @Override

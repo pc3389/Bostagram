@@ -213,7 +213,7 @@ class UploadActivity : AppCompatActivity() {
     }
 
     private fun getTodayDate(): String {
-        val sdf = SimpleDateFormat("yyyy. MM. dd. HH:mm")
+        val sdf = SimpleDateFormat("yyyy. MM. dd. HH:mm:ss")
         return sdf.format(Date())
     }
 

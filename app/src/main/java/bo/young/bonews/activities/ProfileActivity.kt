@@ -20,9 +20,11 @@ import bo.young.bonews.utilities.Constants
 import bo.young.bonews.utilities.UploadHelper
 import com.amplifyframework.api.graphql.model.ModelMutation
 import com.amplifyframework.api.graphql.model.ModelQuery
+import com.amplifyframework.auth.AuthUserAttributeKey
 import com.amplifyframework.core.Amplify
 import com.amplifyframework.datastore.generated.model.Post
 import com.amplifyframework.datastore.generated.model.Profile
+import com.amplifyframework.datastore.generated.model.ProfileImage
 import com.amplifyframework.storage.StorageException
 import com.amplifyframework.storage.options.StorageUploadFileOptions
 import com.amplifyframework.storage.result.StorageDownloadFileResult
@@ -40,18 +42,20 @@ import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.Dispatchers.Main
 import java.io.File
 import java.lang.StringBuilder
+import java.text.SimpleDateFormat
+import java.util.*
+import kotlin.collections.ArrayList
 
 class ProfileActivity : AppCompatActivity() {
     private val context: Context = this
 
-    companion object {
-        private var file: File? = null
-        private val profiles = ArrayList<Profile>()
-        private val posts: ArrayList<Post> = ArrayList()
-        private var postNumber = 0
-        private var hasProfile = false
-        private var hasImage = false
-    }
+    private var file: File? = null
+    private val profiles = ArrayList<Profile>()
+    private val posts: ArrayList<Post> = ArrayList()
+    private var postNumber = 0
+    private var hasProfile = false
+    private var hasImage = false
+    private var imageChanged = false
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -63,26 +67,27 @@ class ProfileActivity : AppCompatActivity() {
             showProgressBar()
             if (profileId != null) {
                 queryProfile(profileId)
-                getEmail()
             } else {
                 hideProgressBar()
                 Toast.makeText(context, "Please create your profile", Toast.LENGTH_SHORT)
                         .show()
                 showEditProfile()
+                val username = getUsername()
+                profAct_text_username.text = username
+                getEmail()
             }
-
-            val username = getUsername()
-            profAct_text_username.text = username
         }
 
         profAct_image_camera.setOnClickListener {
             getImageFromGallery()
         }
 
-        setupMenu()
-
         profAct_image_cancel_bt.setOnClickListener {
             hideEditProfile()
+        }
+
+        profAct_image_back_bt.setOnClickListener {
+            onBackPressed()
         }
 
         profAct_image_save_bt.setOnClickListener {
@@ -93,34 +98,43 @@ class ProfileActivity : AppCompatActivity() {
                 } else {
                     profAct_edit_name.text.toString()
                 }
+                val number = if (profiles[0].profileImage.isEmpty()) {
+                    1
+                } else {
+                    profiles[0].profileImage.first().number + 1
+                }
                 val imageKey = if (file != null) {
-                    getImageKey(username)
+                    getImageKey(username, number)
                 } else null
                 val email = profAct_text_email.text.toString()
-                updateProfile(file, username, name, email, imageKey, hasImage)
+                if (hasProfile) {
+                    updateProfile(file, username, name, email, imageKey, hasImage, number)
+                } else {
+                    createProfile(file, username, name, email, imageKey, hasImage, number)
+                }
                 showProgressBar()
                 hideEditProfile()
             }
         }
-
-        profAct_image_back_bt.setOnClickListener {
-            onBackPressed()
-        }
     }
 
-    private fun setupMenu() {
-        profAct_image_menu_bt.setOnClickListener {
-            val popupMenu = PopupMenu(this@ProfileActivity, profAct_image_menu_bt)
-            popupMenu.menuInflater.inflate(R.menu.menu_profile, popupMenu.menu)
-            popupMenu.setOnMenuItemClickListener {
-                if (it.itemId == R.id.action_edit) {
-                    val name = profAct_text_name.text.toString()
-                    profAct_edit_name.setText(name)
-                    showEditProfile()
+    private fun setupMenu(username: String) {
+        if (username == profiles[0].username) {
+            profAct_image_menu_bt.setOnClickListener {
+                val popupMenu = PopupMenu(this@ProfileActivity, profAct_image_menu_bt)
+                popupMenu.menuInflater.inflate(R.menu.menu_profile, popupMenu.menu)
+                popupMenu.setOnMenuItemClickListener {
+                    if (it.itemId == R.id.action_edit) {
+                        val name = profAct_text_name.text.toString()
+                        profAct_edit_name.setText(name)
+                        showEditProfile()
+                    }
+                    true
                 }
-                true
+                popupMenu.show()
             }
-            popupMenu.show()
+        } else {
+            profAct_image_menu_bt.visibility = View.GONE
         }
     }
 
@@ -128,7 +142,12 @@ class ProfileActivity : AppCompatActivity() {
         Amplify.Auth.fetchUserAttributes(
                 {
                     Log.i("AuthDemo", "User attributes = $it")
-                    runOnUiThread { profAct_text_email.text = it[0].value }
+                    for (attribute in it) {
+                        if (attribute.key == AuthUserAttributeKey.email()) {
+                            runOnUiThread { profAct_text_email.text = attribute.value }
+                        }
+                    }
+
 
                 },
                 { Log.e("AuthDemo", "Failed to fetch user attributes. $it") }
@@ -137,26 +156,28 @@ class ProfileActivity : AppCompatActivity() {
 
     private suspend fun queryProfile(profileId: String) = withContext(IO) {
         Amplify.API.query(
-                ModelQuery.list(Profile::class.java, Profile.ID.contains(profileId)),
+                ModelQuery.get(Profile::class.java, profileId),
                 { response ->
-                    for (profile in response.data) {
-                        profiles.add(profile)
-                        Log.i("MyAmplifyApp", profile.username)
-                    }
+                    profiles.clear()
+                    val profile = response.data
+                    profiles.add(profile)
+                    Log.i("MyAmplifyApp", profile.username)
+
                     if (profiles.isNotEmpty()) {
                         CoroutineScope(Main).launch {
-                            updateUI(profiles[0])
                             hasProfile = true
                             hasImage = profiles[0].hasImage
-
-                            if (profiles.size == 0) {
-                                Toast.makeText(context, "Error", Toast.LENGTH_SHORT).show()
-                            } else {
-                                setupRecycler(profileId)
+                            runOnUiThread {
+                                profAct_text_username.text = profile.username
+                                profAct_text_email.text = profile.emailAddress
                             }
+                            updateUI(profiles[0])
+                            setupRecycler(profileId)
                         }
                     }
-
+                    CoroutineScope(Main).launch {
+                        setupMenu(getUsername())
+                    }
                     hideProgressBar()
                 },
                 { error -> Log.e("MyAmplifyApp", "Query failure", error) }
@@ -166,32 +187,29 @@ class ProfileActivity : AppCompatActivity() {
     private suspend fun updateUI(profile: Profile) = withContext(Main) {
         profAct_text_name.text = profile.nickname
         if (profile.profileImage != null && !isDestroyed) {
-            val profileImage = profile.profileImage
-            val file = File("$cacheDir/$profileImage")
-            if(hasImage) {
-                loadProfileImage(file, profileImage)
+            if (profile.profileImage.size != 0) {
+                val profileImageList = profiles[0].profileImage
+                profileImageList.sortByDescending { it.date }
+                val imageKey = profileImageList.first().profileImageKey
+                val file = File("$cacheDir/$imageKey")
+                loadProfileImage(file, imageKey)
             }
         }
     }
 
-    private suspend fun updateProfile(
-            file: File?,
-            username: String,
-            name: String,
-            email: String,
-            imageKey: String?,
-            hasImage: Boolean
-    ) =
+
+    private suspend fun createProfile(file: File?, username: String, name: String, email: String, imageKey: String?, hasImage: Boolean, imageNumber: Int) =
             withContext(IO) {
-                if (imageKey != null && hasImage) {
-                    imageToS3(file, imageKey)
+                if (imageKey != null && hasImage && imageChanged) {
+                    val date = getTodayDate()
+                    createProfileImage(date, imageNumber, imageKey)
+                    imageToS3(file, username, name, email, imageKey, hasImage)
                 }
 
                 val profile = Profile.builder()
                         .username(username)
                         .nickname(name)
                         .emailAddress(email)
-                        .profileImage(imageKey)
                         .hasImage(hasImage)
                         .build()
 
@@ -210,40 +228,91 @@ class ProfileActivity : AppCompatActivity() {
                 )
             }
 
+    private suspend fun createProfileImage(date: String, profileNumber: Int, imageKey: String) = withContext(IO) {
+        val profileImage = ProfileImage.builder()
+                .date(date)
+                .number(profileNumber)
+                .profileImageKey(imageKey)
+                .profile(profiles[0])
+                .build()
+
+        Amplify.API.mutate(
+                ModelMutation.create(profileImage),
+                { response ->
+                    Log.i("MyAmplifyApp", "ProfileImage added: " + response.data.profileImageKey)
+                },
+                { error -> Log.e("MyAmplifyApp", "Create failed", error) }
+        )
+    }
+
+    private suspend fun updateProfile(file: File?, username: String, name: String, email: String, imageKey: String?, hasImage: Boolean, imageNumber: Int) = withContext(IO) {
+        if (imageKey != null && hasImage && imageChanged) {
+            val date = getTodayDate()
+            createProfileImage(date, imageNumber, imageKey)
+            imageToS3(file, username, name, email, imageKey, hasImage)
+        } else {
+            upload(username, name, email, hasImage)
+        }
+    }
+
+    private suspend fun upload(username: String, name: String, email: String, hasImage: Boolean) = withContext(IO) {
+        val profile = profiles[0].copyOfBuilder()
+                .username(username)
+                .nickname(name)
+                .emailAddress(email)
+                .hasImage(hasImage)
+                .build()
+
+        Amplify.API.mutate(
+                ModelMutation.update(profile),
+                { response ->
+                    CoroutineScope(Main).launch {
+                        queryProfile(response.data.id)
+                    }
+                    Log.i("MyAmplifyApp", "Profile with name updated: " + response.data.nickname)
+                },
+                { error -> Log.e("MyAmplifyApp", "Create failed", error) }
+        )
+    }
+
+
     private suspend fun getUsername(): String = withContext(IO) {
         return@withContext Amplify.Auth.currentUser.username
     }
 
-    private suspend fun getImageKey(username: String): String = withContext(Main) {
+    private suspend fun getImageKey(username: String, number: Int): String = withContext(Main) {
         val builder = StringBuilder()
         builder.append(username)
-        builder.append("_profile.jpg")
+        builder.append("_profile_$number.jpg")
 
         return@withContext builder.toString()
     }
 
-    private suspend fun imageToS3(file: File?, imageKey: String) = withContext(IO) {
+    private suspend fun imageToS3(file: File?, username: String, name: String, email: String, imageKey: String, hasImage: Boolean) {
         if (file != null) {
-            Amplify.Storage.uploadFile(
-                    imageKey,
-                    file,
-                    StorageUploadFileOptions.defaultInstance(),
-                    { result: StorageUploadFileResult ->
-                        Log.i(
-                                "MyAmplifyApp",
-                                "Successfully uploaded: " + result.key
-                        )
-                    },
-                    { error: StorageException? ->
-                        Log.e(
-                                "MyAmplifyApp",
-                                "Upload failed",
-                                error
-                        )
-                    }
-            )
+            withContext(Main) {
+                val photoInCache = File("$cacheDir/$imageKey")
+                if (photoInCache.exists()) {
+                    photoInCache.delete()
+                }
+            }
+            withContext(IO) {
+                Amplify.Storage.uploadFile(
+                        imageKey,
+                        file,
+                        StorageUploadFileOptions.defaultInstance(),
+                        { result2: StorageUploadFileResult ->
+                            Log.i("MyAmplifyApp", "Successfully uploaded: " + result2.key)
+                            CoroutineScope(Main).launch { upload(username, name, email, hasImage) }
+                        },
+                        { error: StorageException? ->
+                            Log.e("MyAmplifyApp", "Upload failed", error)
+                        }
+                )
+            }
         }
     }
+
 
     private suspend fun loadProfileImage(file: File, image: String) = withContext(IO) {
         if (!file.exists()) {
@@ -287,7 +356,7 @@ class ProfileActivity : AppCompatActivity() {
                     }
             )
         } else {
-            val glideWork = CoroutineScope(Main).launch {
+            CoroutineScope(Main).launch {
                 Glide.with(context)
                         .load(file)
                         .listener(object : RequestListener<Drawable> {
@@ -354,6 +423,7 @@ class ProfileActivity : AppCompatActivity() {
                     .load(data?.data)
                     .into(profAct_image_profile_image)
             hasImage = true
+            imageChanged = true
         }
         super.onActivityResult(requestCode, resultCode, data)
     }
@@ -368,6 +438,7 @@ class ProfileActivity : AppCompatActivity() {
 
     private suspend fun queryPost(profileIdCurrentUser: String) = withContext(Default) {
         withContext(Default) {
+            posts.clear()
             for (postItem in profiles[0].posts) {
                 posts.add(postItem)
             }
@@ -508,15 +579,20 @@ class ProfileActivity : AppCompatActivity() {
         }
     }
 
+    private fun getTodayDate(): String {
+        val sdf = SimpleDateFormat("yyyy. MM. dd. HH:mm:ss")
+        return sdf.format(Date())
+    }
+
     override fun onBackPressed() {
         if (hasProfile) {
             if (profAct_layout_save_and_cancel.visibility == View.VISIBLE) {
                 hideEditProfile()
                 return
             } else {
+                super.onBackPressed()
                 finish()
             }
-            super.onBackPressed()
         }
     }
 

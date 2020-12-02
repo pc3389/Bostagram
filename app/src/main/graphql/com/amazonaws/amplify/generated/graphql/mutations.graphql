@@ -8,7 +8,18 @@ mutation CreateProfile(
     username
     nickname
     emailAddress
-    profileImage
+    profileImage {
+      items {
+        id
+        date
+        number
+        profileImageKey
+        profileID
+        createdAt
+        updatedAt
+      }
+      nextToken
+    }
     hasImage
     backgroundImage
     posts {
@@ -21,18 +32,11 @@ mutation CreateProfile(
         contents
         image
         hasImage
-        _version
-        _deleted
-        _lastChangedAt
         createdAt
         updatedAt
       }
       nextToken
-      startedAt
     }
-    _version
-    _deleted
-    _lastChangedAt
     createdAt
     updatedAt
   }
@@ -46,7 +50,18 @@ mutation UpdateProfile(
     username
     nickname
     emailAddress
-    profileImage
+    profileImage {
+      items {
+        id
+        date
+        number
+        profileImageKey
+        profileID
+        createdAt
+        updatedAt
+      }
+      nextToken
+    }
     hasImage
     backgroundImage
     posts {
@@ -59,18 +74,11 @@ mutation UpdateProfile(
         contents
         image
         hasImage
-        _version
-        _deleted
-        _lastChangedAt
         createdAt
         updatedAt
       }
       nextToken
-      startedAt
     }
-    _version
-    _deleted
-    _lastChangedAt
     createdAt
     updatedAt
   }
@@ -84,7 +92,18 @@ mutation DeleteProfile(
     username
     nickname
     emailAddress
-    profileImage
+    profileImage {
+      items {
+        id
+        date
+        number
+        profileImageKey
+        profileID
+        createdAt
+        updatedAt
+      }
+      nextToken
+    }
     hasImage
     backgroundImage
     posts {
@@ -97,18 +116,101 @@ mutation DeleteProfile(
         contents
         image
         hasImage
-        _version
-        _deleted
-        _lastChangedAt
         createdAt
         updatedAt
       }
       nextToken
-      startedAt
     }
-    _version
-    _deleted
-    _lastChangedAt
+    createdAt
+    updatedAt
+  }
+}
+mutation CreateProfileImage(
+  $input: CreateProfileImageInput!
+  $condition: ModelProfileImageConditionInput
+) {
+  createProfileImage(input: $input, condition: $condition) {
+    id
+    date
+    number
+    profileImageKey
+    profileID
+    profile {
+      id
+      username
+      nickname
+      emailAddress
+      profileImage {
+        nextToken
+      }
+      hasImage
+      backgroundImage
+      posts {
+        nextToken
+      }
+      createdAt
+      updatedAt
+    }
+    createdAt
+    updatedAt
+  }
+}
+mutation UpdateProfileImage(
+  $input: UpdateProfileImageInput!
+  $condition: ModelProfileImageConditionInput
+) {
+  updateProfileImage(input: $input, condition: $condition) {
+    id
+    date
+    number
+    profileImageKey
+    profileID
+    profile {
+      id
+      username
+      nickname
+      emailAddress
+      profileImage {
+        nextToken
+      }
+      hasImage
+      backgroundImage
+      posts {
+        nextToken
+      }
+      createdAt
+      updatedAt
+    }
+    createdAt
+    updatedAt
+  }
+}
+mutation DeleteProfileImage(
+  $input: DeleteProfileImageInput!
+  $condition: ModelProfileImageConditionInput
+) {
+  deleteProfileImage(input: $input, condition: $condition) {
+    id
+    date
+    number
+    profileImageKey
+    profileID
+    profile {
+      id
+      username
+      nickname
+      emailAddress
+      profileImage {
+        nextToken
+      }
+      hasImage
+      backgroundImage
+      posts {
+        nextToken
+      }
+      createdAt
+      updatedAt
+    }
     createdAt
     updatedAt
   }
@@ -131,16 +233,14 @@ mutation CreatePost(
       username
       nickname
       emailAddress
-      profileImage
+      profileImage {
+        nextToken
+      }
       hasImage
       backgroundImage
       posts {
         nextToken
-        startedAt
       }
-      _version
-      _deleted
-      _lastChangedAt
       createdAt
       updatedAt
     }
@@ -152,18 +252,11 @@ mutation CreatePost(
         date
         name
         content
-        _version
-        _deleted
-        _lastChangedAt
         createdAt
         updatedAt
       }
       nextToken
-      startedAt
     }
-    _version
-    _deleted
-    _lastChangedAt
     createdAt
     updatedAt
   }
@@ -186,16 +279,14 @@ mutation UpdatePost(
       username
       nickname
       emailAddress
-      profileImage
+      profileImage {
+        nextToken
+      }
       hasImage
       backgroundImage
       posts {
         nextToken
-        startedAt
       }
-      _version
-      _deleted
-      _lastChangedAt
       createdAt
       updatedAt
     }
@@ -207,18 +298,11 @@ mutation UpdatePost(
         date
         name
         content
-        _version
-        _deleted
-        _lastChangedAt
         createdAt
         updatedAt
       }
       nextToken
-      startedAt
     }
-    _version
-    _deleted
-    _lastChangedAt
     createdAt
     updatedAt
   }
@@ -241,16 +325,14 @@ mutation DeletePost(
       username
       nickname
       emailAddress
-      profileImage
+      profileImage {
+        nextToken
+      }
       hasImage
       backgroundImage
       posts {
         nextToken
-        startedAt
       }
-      _version
-      _deleted
-      _lastChangedAt
       createdAt
       updatedAt
     }
@@ -262,18 +344,11 @@ mutation DeletePost(
         date
         name
         content
-        _version
-        _deleted
-        _lastChangedAt
         createdAt
         updatedAt
       }
       nextToken
-      startedAt
     }
-    _version
-    _deleted
-    _lastChangedAt
     createdAt
     updatedAt
   }
@@ -286,9 +361,6 @@ mutation CreatePostPermission(
     id
     username
     permission
-    _version
-    _deleted
-    _lastChangedAt
     createdAt
     updatedAt
   }
@@ -301,9 +373,6 @@ mutation UpdatePostPermission(
     id
     username
     permission
-    _version
-    _deleted
-    _lastChangedAt
     createdAt
     updatedAt
   }
@@ -316,9 +385,6 @@ mutation DeletePostPermission(
     id
     username
     permission
-    _version
-    _deleted
-    _lastChangedAt
     createdAt
     updatedAt
   }
@@ -347,29 +413,18 @@ mutation CreateComment(
         username
         nickname
         emailAddress
-        profileImage
         hasImage
         backgroundImage
-        _version
-        _deleted
-        _lastChangedAt
         createdAt
         updatedAt
       }
       comments {
         nextToken
-        startedAt
       }
-      _version
-      _deleted
-      _lastChangedAt
       createdAt
       updatedAt
     }
     content
-    _version
-    _deleted
-    _lastChangedAt
     createdAt
     updatedAt
   }
@@ -398,29 +453,18 @@ mutation UpdateComment(
         username
         nickname
         emailAddress
-        profileImage
         hasImage
         backgroundImage
-        _version
-        _deleted
-        _lastChangedAt
         createdAt
         updatedAt
       }
       comments {
         nextToken
-        startedAt
       }
-      _version
-      _deleted
-      _lastChangedAt
       createdAt
       updatedAt
     }
     content
-    _version
-    _deleted
-    _lastChangedAt
     createdAt
     updatedAt
   }
@@ -449,29 +493,18 @@ mutation DeleteComment(
         username
         nickname
         emailAddress
-        profileImage
         hasImage
         backgroundImage
-        _version
-        _deleted
-        _lastChangedAt
         createdAt
         updatedAt
       }
       comments {
         nextToken
-        startedAt
       }
-      _version
-      _deleted
-      _lastChangedAt
       createdAt
       updatedAt
     }
     content
-    _version
-    _deleted
-    _lastChangedAt
     createdAt
     updatedAt
   }

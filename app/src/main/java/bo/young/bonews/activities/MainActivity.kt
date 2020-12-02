@@ -36,33 +36,13 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        val username = intent.getStringExtra(Constants.KEY_USERNAME)
+        val username = Amplify.Auth.currentUser.username
         coroutineScope.launch {
             showProgressBar()
             val linearLayoutManager = LinearLayoutManager(context)
             mainAct_rc_posts.layoutManager = linearLayoutManager
-            if (username != null) {
-                getPostPermission(username)
-                queryProfile(username)
-            }
-        }
-
-        mainAct_itemsswipetorefresh.setProgressBackgroundColorSchemeColor(
-                ContextCompat.getColor(
-                        this,
-                        R.color.purple_200
-                )
-        )
-
-        mainAct_itemsswipetorefresh.setColorSchemeColors(Color.WHITE)
-
-        mainAct_itemsswipetorefresh.setOnRefreshListener {
-            showProgressBar()
-            coroutineScope.launch {
-                if (username != null) {
-                    queryProfile(username)
-                }
-            }
+            getPostPermission(username)
+            swipeRefreshListener(username)
         }
 
         mainAct_image_uploadPost_bt.setOnClickListener {
@@ -72,7 +52,6 @@ class MainActivity : AppCompatActivity() {
                 Toast.makeText(this, "Profile is not loaded", Toast.LENGTH_SHORT).show()
             }
         }
-
     }
 
     override fun onResume() {
@@ -95,9 +74,6 @@ class MainActivity : AppCompatActivity() {
         Amplify.API.query(
                 ModelQuery.list(Profile::class.java, Profile.USERNAME.contains(username)),
                 { response ->
-                    if (response.data == null) {
-                        startProfileActivity()
-                    }
                     for (profileItem in response.data) {
                         if (profileItem != null) {
                             if (profileItem.username == username) {
@@ -108,13 +84,11 @@ class MainActivity : AppCompatActivity() {
                     }
                     if (profile.size == 0) {
                         startProfileActivity()
-                    } else {
-                        coroutineScope.launch {
-                            queryPost()
-                            setupMenu()
-                        }
                     }
-
+                    coroutineScope.launch {
+                        queryPost()
+                        setupMenu()
+                    }
                 },
                 { error ->
                     Log.e("MyAmplifyApp", "Query failure", error)
@@ -125,6 +99,23 @@ class MainActivity : AppCompatActivity() {
         )
     }
 
+    private fun swipeRefreshListener(username: String) {
+        mainAct_itemsswipetorefresh.setProgressBackgroundColorSchemeColor(
+                ContextCompat.getColor(
+                        this,
+                        R.color.purple_200
+                )
+        )
+
+        mainAct_itemsswipetorefresh.setColorSchemeColors(Color.WHITE)
+
+        mainAct_itemsswipetorefresh.setOnRefreshListener {
+            showProgressBar()
+            coroutineScope.launch {
+                queryProfile(username)
+            }
+        }
+    }
     private suspend fun queryPost() = withContext(IO) {
 
         Amplify.API.query(
@@ -139,8 +130,10 @@ class MainActivity : AppCompatActivity() {
                         withContext(Default) {
                             posts.sortByDescending { it.date }
                         }
-                        mainAct_rc_posts.adapter = MainAdapters(posts, context, profile[0].id)
-                        mainAct_itemsswipetorefresh.isRefreshing = false
+                        if(profile.isNotEmpty()) {
+                            mainAct_rc_posts.adapter = MainAdapters(posts, context, profile[0].id)
+                            mainAct_itemsswipetorefresh.isRefreshing = false
+                        }
                         hideProgressBar()
                     }
                 },

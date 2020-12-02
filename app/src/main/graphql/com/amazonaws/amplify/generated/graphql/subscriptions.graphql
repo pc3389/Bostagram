@@ -5,7 +5,18 @@ subscription OnCreateProfile {
     username
     nickname
     emailAddress
-    profileImage
+    profileImage {
+      items {
+        id
+        date
+        number
+        profileImageKey
+        profileID
+        createdAt
+        updatedAt
+      }
+      nextToken
+    }
     hasImage
     backgroundImage
     posts {
@@ -18,18 +29,11 @@ subscription OnCreateProfile {
         contents
         image
         hasImage
-        _version
-        _deleted
-        _lastChangedAt
         createdAt
         updatedAt
       }
       nextToken
-      startedAt
     }
-    _version
-    _deleted
-    _lastChangedAt
     createdAt
     updatedAt
   }
@@ -40,7 +44,18 @@ subscription OnUpdateProfile {
     username
     nickname
     emailAddress
-    profileImage
+    profileImage {
+      items {
+        id
+        date
+        number
+        profileImageKey
+        profileID
+        createdAt
+        updatedAt
+      }
+      nextToken
+    }
     hasImage
     backgroundImage
     posts {
@@ -53,18 +68,11 @@ subscription OnUpdateProfile {
         contents
         image
         hasImage
-        _version
-        _deleted
-        _lastChangedAt
         createdAt
         updatedAt
       }
       nextToken
-      startedAt
     }
-    _version
-    _deleted
-    _lastChangedAt
     createdAt
     updatedAt
   }
@@ -75,7 +83,18 @@ subscription OnDeleteProfile {
     username
     nickname
     emailAddress
-    profileImage
+    profileImage {
+      items {
+        id
+        date
+        number
+        profileImageKey
+        profileID
+        createdAt
+        updatedAt
+      }
+      nextToken
+    }
     hasImage
     backgroundImage
     posts {
@@ -88,18 +107,92 @@ subscription OnDeleteProfile {
         contents
         image
         hasImage
-        _version
-        _deleted
-        _lastChangedAt
         createdAt
         updatedAt
       }
       nextToken
-      startedAt
     }
-    _version
-    _deleted
-    _lastChangedAt
+    createdAt
+    updatedAt
+  }
+}
+subscription OnCreateProfileImage {
+  onCreateProfileImage {
+    id
+    date
+    number
+    profileImageKey
+    profileID
+    profile {
+      id
+      username
+      nickname
+      emailAddress
+      profileImage {
+        nextToken
+      }
+      hasImage
+      backgroundImage
+      posts {
+        nextToken
+      }
+      createdAt
+      updatedAt
+    }
+    createdAt
+    updatedAt
+  }
+}
+subscription OnUpdateProfileImage {
+  onUpdateProfileImage {
+    id
+    date
+    number
+    profileImageKey
+    profileID
+    profile {
+      id
+      username
+      nickname
+      emailAddress
+      profileImage {
+        nextToken
+      }
+      hasImage
+      backgroundImage
+      posts {
+        nextToken
+      }
+      createdAt
+      updatedAt
+    }
+    createdAt
+    updatedAt
+  }
+}
+subscription OnDeleteProfileImage {
+  onDeleteProfileImage {
+    id
+    date
+    number
+    profileImageKey
+    profileID
+    profile {
+      id
+      username
+      nickname
+      emailAddress
+      profileImage {
+        nextToken
+      }
+      hasImage
+      backgroundImage
+      posts {
+        nextToken
+      }
+      createdAt
+      updatedAt
+    }
     createdAt
     updatedAt
   }
@@ -119,16 +212,14 @@ subscription OnCreatePost {
       username
       nickname
       emailAddress
-      profileImage
+      profileImage {
+        nextToken
+      }
       hasImage
       backgroundImage
       posts {
         nextToken
-        startedAt
       }
-      _version
-      _deleted
-      _lastChangedAt
       createdAt
       updatedAt
     }
@@ -140,18 +231,11 @@ subscription OnCreatePost {
         date
         name
         content
-        _version
-        _deleted
-        _lastChangedAt
         createdAt
         updatedAt
       }
       nextToken
-      startedAt
     }
-    _version
-    _deleted
-    _lastChangedAt
     createdAt
     updatedAt
   }
@@ -171,16 +255,14 @@ subscription OnUpdatePost {
       username
       nickname
       emailAddress
-      profileImage
+      profileImage {
+        nextToken
+      }
       hasImage
       backgroundImage
       posts {
         nextToken
-        startedAt
       }
-      _version
-      _deleted
-      _lastChangedAt
       createdAt
       updatedAt
     }
@@ -192,18 +274,11 @@ subscription OnUpdatePost {
         date
         name
         content
-        _version
-        _deleted
-        _lastChangedAt
         createdAt
         updatedAt
       }
       nextToken
-      startedAt
     }
-    _version
-    _deleted
-    _lastChangedAt
     createdAt
     updatedAt
   }
@@ -223,16 +298,14 @@ subscription OnDeletePost {
       username
       nickname
       emailAddress
-      profileImage
+      profileImage {
+        nextToken
+      }
       hasImage
       backgroundImage
       posts {
         nextToken
-        startedAt
       }
-      _version
-      _deleted
-      _lastChangedAt
       createdAt
       updatedAt
     }
@@ -244,18 +317,11 @@ subscription OnDeletePost {
         date
         name
         content
-        _version
-        _deleted
-        _lastChangedAt
         createdAt
         updatedAt
       }
       nextToken
-      startedAt
     }
-    _version
-    _deleted
-    _lastChangedAt
     createdAt
     updatedAt
   }
@@ -265,9 +331,6 @@ subscription OnCreatePostPermission {
     id
     username
     permission
-    _version
-    _deleted
-    _lastChangedAt
     createdAt
     updatedAt
   }
@@ -277,9 +340,6 @@ subscription OnUpdatePostPermission {
     id
     username
     permission
-    _version
-    _deleted
-    _lastChangedAt
     createdAt
     updatedAt
   }
@@ -289,9 +349,6 @@ subscription OnDeletePostPermission {
     id
     username
     permission
-    _version
-    _deleted
-    _lastChangedAt
     createdAt
     updatedAt
   }
@@ -317,29 +374,18 @@ subscription OnCreateComment {
         username
         nickname
         emailAddress
-        profileImage
         hasImage
         backgroundImage
-        _version
-        _deleted
-        _lastChangedAt
         createdAt
         updatedAt
       }
       comments {
         nextToken
-        startedAt
       }
-      _version
-      _deleted
-      _lastChangedAt
       createdAt
       updatedAt
     }
     content
-    _version
-    _deleted
-    _lastChangedAt
     createdAt
     updatedAt
   }
@@ -365,29 +411,18 @@ subscription OnUpdateComment {
         username
         nickname
         emailAddress
-        profileImage
         hasImage
         backgroundImage
-        _version
-        _deleted
-        _lastChangedAt
         createdAt
         updatedAt
       }
       comments {
         nextToken
-        startedAt
       }
-      _version
-      _deleted
-      _lastChangedAt
       createdAt
       updatedAt
     }
     content
-    _version
-    _deleted
-    _lastChangedAt
     createdAt
     updatedAt
   }
@@ -413,29 +448,18 @@ subscription OnDeleteComment {
         username
         nickname
         emailAddress
-        profileImage
         hasImage
         backgroundImage
-        _version
-        _deleted
-        _lastChangedAt
         createdAt
         updatedAt
       }
       comments {
         nextToken
-        startedAt
       }
-      _version
-      _deleted
-      _lastChangedAt
       createdAt
       updatedAt
     }
     content
-    _version
-    _deleted
-    _lastChangedAt
     createdAt
     updatedAt
   }

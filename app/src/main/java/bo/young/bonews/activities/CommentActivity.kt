@@ -46,16 +46,14 @@ class CommentActivity : AppCompatActivity() {
         val profileIdCurrentUser = intent.getStringExtra(Constants.PROFILE_ID_CURRENTUSER)
         val postId = intent.getStringExtra(Constants.POST_ID)
         val linearLayoutManager = LinearLayoutManager(context)
+        linearLayoutManager.reverseLayout = true
         commentAct_rc_posts.layoutManager = linearLayoutManager
 
         showProgressbar()
 
         coroutineScope.launch {
-            if (profileIdCurrentUser != null) {
-                queryProfile(profileIdCurrentUser)
-            }
-            if (postId != null) {
-                queryPost(postId)
+            if (profileIdCurrentUser != null && postId != null) {
+                queryProfile(profileIdCurrentUser, postId)
             }
         }
 
@@ -64,10 +62,11 @@ class CommentActivity : AppCompatActivity() {
                 if (profileIdCurrentUser != null) {
                     val content = commentAct_edit_comment.text.toString()
                     val date = getTodayDate()
-                    if(content == "") {
+                    if (content == "") {
                         Toast.makeText(context, "Comment cannot be empty", Toast.LENGTH_SHORT).show()
                     } else {
                         uploadComment(profileIdCurrentUser, date, content, currentPost!!)
+                        commentAct_rc_posts.scrollToPosition(0)
                     }
                 }
             }
@@ -79,7 +78,7 @@ class CommentActivity : AppCompatActivity() {
 
     }
 
-    private suspend fun queryProfile(profileId: String) = withContext(IO) {
+    private suspend fun queryProfile(profileId: String, postId: String) = withContext(IO) {
         Amplify.API.query(
                 ModelQuery.get(Profile::class.java, profileId),
                 { response ->
@@ -93,6 +92,8 @@ class CommentActivity : AppCompatActivity() {
                         if (hasPosts) {
                             hideProgressbar()
                         }
+                        CoroutineScope(Main).launch { queryPost(postId) }
+
                         Log.i("MyAmplifyApp", profile.username)
                     }
                 },
@@ -112,7 +113,9 @@ class CommentActivity : AppCompatActivity() {
                             commentList.add(commentItem)
                         }
                         runOnUiThread {
+                            commentList.sortByDescending { it.date }
                             commentAct_rc_posts.adapter = CommentAdapter(commentList, context, currentProfile!!.id)
+                            commentAct_rc_posts.scrollToPosition(0)
                         }
 
                     }
@@ -142,7 +145,11 @@ class CommentActivity : AppCompatActivity() {
                         ModelMutation.create(comment),
                         { response ->
                             Log.i("MyAmplifyApp", "Todo with id: " + response.data.id)
-                            finish()
+                            commentList.add(0,response.data)
+                            runOnUiThread {
+                                commentAct_rc_posts.adapter = CommentAdapter(commentList, context, currentProfile!!.id)
+                                commentAct_rc_posts.scrollToPosition(0)
+                            }
                         },
                         { error -> Log.e("MyAmplifyApp", "Create failed", error) }
                 )
@@ -163,7 +170,7 @@ class CommentActivity : AppCompatActivity() {
     }
 
     private fun getTodayDate(): String {
-        val sdf = SimpleDateFormat("yyyy. MM. dd. HH:mm")
+        val sdf = SimpleDateFormat("yyyy. MM. dd. HH:mm:ss")
         return sdf.format(Date())
     }
 

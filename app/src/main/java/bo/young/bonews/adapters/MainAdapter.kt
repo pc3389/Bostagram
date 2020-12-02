@@ -80,10 +80,17 @@ class MainAdapters(private val items: ArrayList<Post>, val context: Context, val
                 val numberOfComments = "$comments Comments"
                 holder.commentsTextView.text = numberOfComments
 
-                val profileImagePath =
-                        context.cacheDir.toString() + "/" + items[position].profile.profileImage
-                val profileImageKey = items[position].profile.profileImage
-                if (profileImageKey != null) {
+                val profileImageList = if (items[position].profile.profileImage == null) {
+                    null
+                } else if (items[position].profile.profileImage.size == 0) {
+                    null
+                } else {
+                    items[position].profile.profileImage
+                }
+                if (profileImageList != null) {
+                    profileImageList.sortByDescending { it.date }
+                    val profileImageKey = profileImageList.first().profileImageKey
+                    val profileImagePath = context.cacheDir.toString() + "/" + profileImageKey
                     loadProfileImage(profileImagePath, profileImageKey, holder, items[position].profile.hasImage)
                 }
                 val image = items[position].image

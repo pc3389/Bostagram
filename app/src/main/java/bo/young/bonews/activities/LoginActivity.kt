@@ -78,7 +78,7 @@ class LoginActivity : AppCompatActivity() {
 
     }
 
-    private fun setupUI() {
+    private fun setupUI() = runOnUiThread {
         loginAct_text_guest_bt.setOnClickListener {
             CoroutineScope(IO).launch { logIn("guest", "guest123") }
         }

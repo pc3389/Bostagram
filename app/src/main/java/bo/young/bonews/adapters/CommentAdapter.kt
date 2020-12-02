@@ -26,7 +26,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 
-class CommentAdapter(private val items: ArrayList<Comment>, val context: Context, val profileIdCurrentUser: String) :
+class CommentAdapter(private val items: ArrayList<Comment>, val context: Context, private val profileIdCurrentUser: String) :
         RecyclerView.Adapter<CommentAdapter.ViewHolder>() {
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
