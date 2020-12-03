@@ -38,11 +38,9 @@ import kotlin.collections.ArrayList
 class UploadActivity : AppCompatActivity() {
     private val context = this
 
-    companion object {
-        private var file: File? = null
-        private var hasImage: Boolean = false
-        private val profileList: ArrayList<Profile> = ArrayList()
-    }
+    private var file: File? = null
+    private var hasImage: Boolean = false
+    private val profileList: ArrayList<Profile> = ArrayList()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -79,7 +77,25 @@ class UploadActivity : AppCompatActivity() {
                     }
                 }
             }
-
+        }
+        uploadAct_text_save_draft.setOnClickListener {
+            CoroutineScope(Main).launch {
+                if (uploadAct_edit_title.text.toString() == "") {
+                    Toast.makeText(context, "Title should not be empty", Toast.LENGTH_SHORT).show()
+                } else {
+                    val title = uploadAct_edit_title.text.toString()
+                    val imageKey = if (hasImage) {
+                        getImageKey(title)
+                    } else {
+                        null
+                    }
+                    val content = uploadAct_edit_content.text.toString()
+                    if (profileList.size != 0) {
+                        val profile = profileList[0]
+                        uploadPost(file, title, content, PostStatus.DRAFT, imageKey, profile)
+                    }
+                }
+            }
         }
         uploadAct_text_add_photo_bt.setOnClickListener {
             getImage()
@@ -90,10 +106,10 @@ class UploadActivity : AppCompatActivity() {
         Amplify.API.query(
                 ModelQuery.get(Profile::class.java, profileId),
                 { response ->
-                        if (response.data.id == profileId) {
-                            profileList.add(response.data)
-                            Log.i("MyAmplifyApp", response.data.username + "is added")
-                        }
+                    if (response.data.id == profileId) {
+                        profileList.add(response.data)
+                        Log.i("MyAmplifyApp", response.data.username + "is added")
+                    }
                     turnOffProgressBar()
                 },
                 { error ->
@@ -175,9 +191,6 @@ class UploadActivity : AppCompatActivity() {
             profile: Profile,
     ) =
             withContext(IO) {
-                if (file != null && imageKey != null && hasImage) {
-                    imageToS3(file, imageKey)
-                }
 
                 val post = Post.builder()
                         .title(title)
@@ -193,8 +206,16 @@ class UploadActivity : AppCompatActivity() {
                 Amplify.API.mutate(
                         ModelMutation.create(post),
                         { response ->
-                            Log.i("MyAmplifyApp", "Todo with id: " + response.data.id)
-                            finish()
+                            val id = response.data.id
+                            Log.i("MyAmplifyApp", "Todo with id: $id")
+                            if (file != null && hasImage) {
+                                CoroutineScope(IO).launch {
+                                    val key = getImageKey(id)
+                                    imageToS3(file, key)
+                                }
+                            } else {
+                                finish()
+                            }
                         },
                         { error -> Log.e("MyAmplifyApp", "Create failed", error) }
                 )
@@ -204,10 +225,10 @@ class UploadActivity : AppCompatActivity() {
         return@withContext Amplify.Auth.currentUser.username
     }
 
-    private suspend fun getImageKey(title: String): String = withContext(Main) {
+    private suspend fun getImageKey(postId: String): String = withContext(Main) {
         val builder = StringBuilder()
         builder.append(getUsername())
-        builder.append("_$title.jpg")
+        builder.append("$postId.jpg")
 
         return@withContext builder.toString()
     }
@@ -224,10 +245,8 @@ class UploadActivity : AppCompatActivity() {
                     file,
                     StorageUploadFileOptions.defaultInstance(),
                     { result: StorageUploadFileResult ->
-                        Log.i(
-                                "MyAmplifyApp",
-                                "Successfully uploaded: " + result.key
-                        )
+                        Log.i("MyAmplifyApp", "Successfully uploaded: " + result.key)
+                        finish()
                     },
                     { error: StorageException? ->
                         Log.e(

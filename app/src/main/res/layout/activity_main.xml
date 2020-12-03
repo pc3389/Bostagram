@@ -42,7 +42,7 @@
             android:layout_height="wrap_content"
             android:padding="20dp"
             android:src="@drawable/ic_add_post_24"
-            app:layout_constraintEnd_toStartOf="@id/mainAct_image_search_bt"
+            app:layout_constraintEnd_toStartOf="@id/mainAct_image_menu_bt"
             app:layout_constraintTop_toTopOf="parent" />
 
         <ImageView
@@ -51,8 +51,9 @@
             android:layout_height="wrap_content"
             android:contentDescription="Search Button"
             android:padding="20dp"
+            android:visibility="invisible"
             android:src="@drawable/ic_search_24"
-            app:layout_constraintEnd_toStartOf="@id/mainAct_image_menu_bt"
+            app:layout_constraintEnd_toStartOf="@id/mainAct_image_uploadPost_bt"
             app:layout_constraintTop_toTopOf="parent" />
 
         <ImageView

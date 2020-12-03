@@ -18,6 +18,7 @@ import com.amplifyframework.api.graphql.model.ModelQuery
 import com.amplifyframework.core.Amplify
 import com.amplifyframework.datastore.generated.model.Post
 import com.amplifyframework.datastore.generated.model.PostPermission
+import com.amplifyframework.datastore.generated.model.PostStatus
 import com.amplifyframework.datastore.generated.model.Profile
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.activity_profile.*
@@ -119,7 +120,7 @@ class MainActivity : AppCompatActivity() {
     private suspend fun queryPost() = withContext(IO) {
 
         Amplify.API.query(
-                ModelQuery.list(Post::class.java, Post.TITLE.contains("")),
+                ModelQuery.list(Post::class.java, Post.STATUS.eq(PostStatus.PUBLISHED)),
                 { response ->
                     posts.clear()
                     for (post in response.data) {
@@ -238,13 +239,14 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun startProfileActivity() {
-        val intent = Intent(this, ProfileActivity::class.java)
+        val intent = Intent(this, ProfileActivity::class.java).apply{}
         startActivity(intent)
     }
 
     private fun startProfileActivity(profileId: String) {
         val intent = Intent(this, ProfileActivity::class.java).apply {
             putExtra(Constants.PROFILE_ID, profileId)
+            putExtra(Constants.PROFILE_ID_CURRENTUSER, profileId)
         }
         startActivity(intent)
     }

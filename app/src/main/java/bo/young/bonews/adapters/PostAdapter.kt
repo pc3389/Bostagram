@@ -51,28 +51,22 @@ class PostAdapter(private val items: ArrayList<Post>, val context: Context, priv
             } + " Comments"
             holder.commentsTextView.text = numberOfComments
 
-            val image = items[position].image
+            val postId = items[position].id
+            val image = "$postId.jpg"
             val filepath = context.cacheDir.toString() + "/$image"
-            if (items[position].image != null) {
-                loadImageFromS3(filepath, holder)
-            } else {
-                holder.imageImageView.visibility = View.GONE
-            }
+            loadImageFromS3(filepath, holder, position)
             holder.itemView.setOnClickListener {
                 val intent = Intent(context, PostActivity::class.java).apply {
                     putExtra(Constants.PROFILE_ID_CURRENTUSER, profileIdCurrentUser)
                     putExtra(Constants.PROFILE_ID, items[position].profile.id)
-                    putExtra(Constants.POST_ID, items[position].id)
+                    putExtra(Constants.POST_ID, postId)
                 }
                 context.startActivity(intent)
             }
         }
     }
 
-    private suspend fun loadImageFromS3(
-            filepath: String,
-            holder: ViewHolder,
-    ) =
+    private suspend fun loadImageFromS3(filepath: String, holder: ViewHolder, itemNumber: Int) =
             withContext(Dispatchers.Main) {
                 val file = File(filepath)
                 if (file.exists()) {

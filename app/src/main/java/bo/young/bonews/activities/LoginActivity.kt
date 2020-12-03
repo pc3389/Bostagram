@@ -1,10 +1,16 @@
 package bo.young.bonews.activities
 
+import android.app.Activity
+import android.content.Context
 import android.content.Intent
+import android.graphics.Rect
 import android.os.Bundle
 import android.util.Log
+import android.view.MotionEvent
 import android.view.View
 import android.view.inputmethod.EditorInfo
+import android.view.inputmethod.InputMethodManager
+import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import bo.young.bonews.R
@@ -86,7 +92,6 @@ class LoginActivity : AppCompatActivity() {
         loginAct_text_signUp_bt.setOnClickListener {
             val intent = Intent(this, SignUpActivity::class.java)
             startActivity(intent)
-            finish()
         }
 
         loginAct_text_logIn_bt.setOnClickListener {
@@ -111,6 +116,7 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private suspend fun logIn(username: String, password: String) = withContext(Main) {
+        hideKeyboard()
         loginAct_progressbar.visibility = View.VISIBLE
         loginAct_layout_all.visibility = View.GONE
         withContext(IO) {
@@ -143,6 +149,27 @@ class LoginActivity : AppCompatActivity() {
         }
 
     }
+
+    override fun dispatchTouchEvent(event: MotionEvent): Boolean {
+        if (event.action == MotionEvent.ACTION_DOWN) {
+            val v = currentFocus
+            if (v is EditText) {
+                val outRect = Rect()
+                v.getGlobalVisibleRect(outRect)
+                if (!outRect.contains(event.rawX.toInt(), event.rawY.toInt())) {
+                    Log.d("focus", "touchevent")
+                    v.clearFocus()
+                    hideKeyboard()
+                }
+            }
+        }
+        return super.dispatchTouchEvent(event)}
+
+    private fun hideKeyboard() {
+        val inputMethodManager = getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
+        inputMethodManager.hideSoftInputFromWindow(currentFocus?.windowToken, 0)
+    }
+
 
     private fun startMainActivity(username: String) {
         val intent = Intent(this, MainActivity::class.java).apply{

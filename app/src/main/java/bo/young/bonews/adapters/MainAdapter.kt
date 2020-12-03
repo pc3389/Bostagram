@@ -93,9 +93,10 @@ class MainAdapters(private val items: ArrayList<Post>, val context: Context, val
                     val profileImagePath = context.cacheDir.toString() + "/" + profileImageKey
                     loadProfileImage(profileImagePath, profileImageKey, holder, items[position].profile.hasImage)
                 }
-                val image = items[position].image
+                val postId = items[position].id
+                val image = "$postId.jpg"
                 val filepath = context.cacheDir.toString() + "/$image"
-                if (items[position].image != null) {
+                if (items[position].hasImage) {
                     loadImageFromS3(filepath, image, holder, items[position].hasImage)
                 } else {
                     holder.imageImageView.visibility = View.GONE
@@ -105,7 +106,7 @@ class MainAdapters(private val items: ArrayList<Post>, val context: Context, val
                     val intent = Intent(context, PostActivity::class.java).apply {
                         putExtra(Constants.PROFILE_ID_CURRENTUSER, profileIdCurrentUser)
                         putExtra(Constants.PROFILE_ID, items[position].profile.id)
-                        putExtra(Constants.POST_ID, items[position].id)
+                        putExtra(Constants.POST_ID, postId)
                     }
                     context.startActivity(intent)
                 }

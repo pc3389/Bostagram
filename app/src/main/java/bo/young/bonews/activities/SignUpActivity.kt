@@ -24,11 +24,11 @@ class SignUpActivity : AppCompatActivity() {
         setContentView(R.layout.activity_sign_up)
 
         signUpAct_text_signUp_bt.setOnClickListener {
-            val username:String = signUpAct_edit_username.text.toString()
+            val username: String = signUpAct_edit_username.text.toString()
             val password: String = signUpAct_edit_password.text.toString()
             val emailAddress: String = signUpAct_edit_email.text.toString()
             val phoneNumber = signUpAct_edit_phone.text.toString()
-            if(username.isEmpty() || password.isEmpty() || emailAddress.isEmpty()) {
+            if (username.isEmpty() || password.isEmpty() || emailAddress.isEmpty()) {
                 when {
                     username.isEmpty() -> {
                         Toast.makeText(this, "Username is required", Toast.LENGTH_SHORT).show()
@@ -56,30 +56,21 @@ class SignUpActivity : AppCompatActivity() {
             //"+15551234567"
             attributes.add(AuthUserAttribute(AuthUserAttributeKey.phoneNumber(), phoneNumber))
             Amplify.Auth.signUp(
-                userName,
-                password,
-                AuthSignUpOptions.builder().userAttributes(attributes).build(),
-                { result -> Log.i("MyAmplifyApp", "Result: $result")
-                    if(result.isSignUpComplete) {
-                        startConfirmationActivity(userName)
+                    userName,
+                    password,
+                    AuthSignUpOptions.builder().userAttributes(attributes).build(),
+                    { result ->
+                        Log.i("MyAmplifyApp", "Result: $result")
+                        finish()
+                    },
+                    { error ->
+                        Log.e("MyAmplifyApp", "Sign up failed", error)
+                        runOnUiThread {
+                            Toast.makeText(context, error.recoverySuggestion, Toast.LENGTH_SHORT).show()
+                        }
                     }
-
-                },
-                { error -> Log.e("MyAmplifyApp", "Sign up failed", error)
-                    runOnUiThread {
-                        Toast.makeText(context,  error.recoverySuggestion, Toast.LENGTH_SHORT).show()
-                    }
-                }
             )
         }
-    }
-
-    private fun startConfirmationActivity(username: String) {
-        val intent = Intent(this, ConfirmationActivity::class.java).apply {
-            putExtra(Constants.KEY_USERNAME, username)
-        }
-        startActivity(intent)
-        finish()
     }
 
 }

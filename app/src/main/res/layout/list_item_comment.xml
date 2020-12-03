@@ -32,12 +32,13 @@
 
                 <TextView
                     android:id="@+id/item_comment_text_name"
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:paddingHorizontal="10dp"
                     android:paddingVertical="2dp"
                     android:textStyle="bold"
                     android:textSize="@dimen/small_text_size"
+                    app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
                     tools:text="UserName" />
 

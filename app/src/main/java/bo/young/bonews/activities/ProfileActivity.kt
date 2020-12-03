@@ -5,14 +5,19 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Rect
 import android.graphics.drawable.Drawable
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.view.MotionEvent
 import android.view.View
+import android.view.inputmethod.InputMethodManager
+import android.widget.EditText
 import android.widget.PopupMenu
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.LinearLayoutManager
 import bo.young.bonews.R
 import bo.young.bonews.adapters.PostAdapter
@@ -22,6 +27,7 @@ import com.amplifyframework.api.graphql.model.ModelMutation
 import com.amplifyframework.api.graphql.model.ModelQuery
 import com.amplifyframework.auth.AuthUserAttributeKey
 import com.amplifyframework.core.Amplify
+import com.amplifyframework.datastore.generated.model.Comment
 import com.amplifyframework.datastore.generated.model.Post
 import com.amplifyframework.datastore.generated.model.Profile
 import com.amplifyframework.datastore.generated.model.ProfileImage
@@ -47,7 +53,7 @@ import java.util.*
 import kotlin.collections.ArrayList
 
 class ProfileActivity : AppCompatActivity() {
-    private val context: Context = this
+    private val context = this
 
     private var file: File? = null
     private val profiles = ArrayList<Profile>()
@@ -63,12 +69,12 @@ class ProfileActivity : AppCompatActivity() {
         setContentView(R.layout.activity_profile)
 
         val profileId = intent.getStringExtra(Constants.PROFILE_ID)
+        val currentUserProfileId = intent.getStringExtra(Constants.PROFILE_ID_CURRENTUSER)
         CoroutineScope(Main).launch {
             showProgressBar()
-            if (profileId != null) {
-                queryProfile(profileId)
+            if (profileId != null && currentUserProfileId != null) {
+                queryProfile(profileId, currentUserProfileId)
             } else {
-                hideProgressBar()
                 Toast.makeText(context, "Please create your profile", Toast.LENGTH_SHORT)
                         .show()
                 showEditProfile()
@@ -83,7 +89,7 @@ class ProfileActivity : AppCompatActivity() {
         }
 
         profAct_image_cancel_bt.setOnClickListener {
-            hideEditProfile()
+            showCancelDialog()
         }
 
         profAct_image_back_bt.setOnClickListener {
@@ -92,6 +98,9 @@ class ProfileActivity : AppCompatActivity() {
 
         profAct_image_save_bt.setOnClickListener {
             CoroutineScope(Main).launch {
+                postNumber = 0
+                hideKeyboard()
+                hideEditProfile()
                 val username = getUsername()
                 val name = if (profAct_edit_name.text.toString() == "") {
                     username
@@ -112,8 +121,6 @@ class ProfileActivity : AppCompatActivity() {
                 } else {
                     createProfile(file, username, name, email, imageKey, hasImage, number)
                 }
-                showProgressBar()
-                hideEditProfile()
             }
         }
     }
@@ -154,7 +161,7 @@ class ProfileActivity : AppCompatActivity() {
         )
     }
 
-    private suspend fun queryProfile(profileId: String) = withContext(IO) {
+    private suspend fun queryProfile(profileId: String, currentUserProfileId: String) = withContext(IO) {
         Amplify.API.query(
                 ModelQuery.get(Profile::class.java, profileId),
                 { response ->
@@ -172,13 +179,13 @@ class ProfileActivity : AppCompatActivity() {
                                 profAct_text_email.text = profile.emailAddress
                             }
                             updateUI(profiles[0])
-                            setupRecycler(profileId)
+                            setupRecycler()
+                            queryPost(currentUserProfileId)
                         }
                     }
                     CoroutineScope(Main).launch {
                         setupMenu(getUsername())
                     }
-                    hideProgressBar()
                 },
                 { error -> Log.e("MyAmplifyApp", "Query failure", error) }
         )
@@ -195,6 +202,7 @@ class ProfileActivity : AppCompatActivity() {
                 loadProfileImage(file, imageKey)
             }
         }
+        hideProgressBar()
     }
 
 
@@ -203,7 +211,7 @@ class ProfileActivity : AppCompatActivity() {
                 if (imageKey != null && hasImage && imageChanged) {
                     val date = getTodayDate()
                     createProfileImage(date, imageNumber, imageKey)
-                    imageToS3(file, username, name, email, imageKey, hasImage)
+                    imageToS3(file, username, name, email, imageKey, hasImage, false)
                 }
 
                 val profile = Profile.builder()
@@ -217,14 +225,18 @@ class ProfileActivity : AppCompatActivity() {
                         ModelMutation.create(profile),
                         { response ->
                             CoroutineScope(Main).launch {
-                                queryProfile(response.data.id)
+                                profAct_text_name.text = name
+                                hideProgressBar()
                             }
                             Log.i(
                                     "MyAmplifyApp",
                                     "Profile with name: " + response.data.nickname
                             )
                         },
-                        { error -> Log.e("MyAmplifyApp", "Create failed", error) }
+                        { error ->
+                            Log.e("MyAmplifyApp", "Create failed", error)
+                            hideProgressBar()
+                        }
                 )
             }
 
@@ -249,7 +261,7 @@ class ProfileActivity : AppCompatActivity() {
         if (imageKey != null && hasImage && imageChanged) {
             val date = getTodayDate()
             createProfileImage(date, imageNumber, imageKey)
-            imageToS3(file, username, name, email, imageKey, hasImage)
+            imageToS3(file, username, name, email, imageKey, hasImage, true)
         } else {
             upload(username, name, email, hasImage)
         }
@@ -267,11 +279,15 @@ class ProfileActivity : AppCompatActivity() {
                 ModelMutation.update(profile),
                 { response ->
                     CoroutineScope(Main).launch {
-                        queryProfile(response.data.id)
+                        profAct_text_name.text = name
+                        hideProgressBar()
                     }
                     Log.i("MyAmplifyApp", "Profile with name updated: " + response.data.nickname)
                 },
-                { error -> Log.e("MyAmplifyApp", "Create failed", error) }
+                { error ->
+                    Log.e("MyAmplifyApp", "Create failed", error)
+                    hideProgressBar()
+                }
         )
     }
 
@@ -288,7 +304,7 @@ class ProfileActivity : AppCompatActivity() {
         return@withContext builder.toString()
     }
 
-    private suspend fun imageToS3(file: File?, username: String, name: String, email: String, imageKey: String, hasImage: Boolean) {
+    private suspend fun imageToS3(file: File?, username: String, name: String, email: String, imageKey: String, hasImage: Boolean, isUpload: Boolean) {
         if (file != null) {
             withContext(Main) {
                 val photoInCache = File("$cacheDir/$imageKey")
@@ -303,7 +319,9 @@ class ProfileActivity : AppCompatActivity() {
                         StorageUploadFileOptions.defaultInstance(),
                         { result2: StorageUploadFileResult ->
                             Log.i("MyAmplifyApp", "Successfully uploaded: " + result2.key)
-                            CoroutineScope(Main).launch { upload(username, name, email, hasImage) }
+                            if (isUpload) {
+                                CoroutineScope(Main).launch { upload(username, name, email, hasImage) }
+                            }
                         },
                         { error: StorageException? ->
                             Log.e("MyAmplifyApp", "Upload failed", error)
@@ -329,7 +347,6 @@ class ProfileActivity : AppCompatActivity() {
                                             target: Target<Drawable>?,
                                             isFirstResource: Boolean
                                     ): Boolean {
-                                        hideProgressBar()
                                         return false
                                     }
 
@@ -340,7 +357,6 @@ class ProfileActivity : AppCompatActivity() {
                                             dataSource: DataSource?,
                                             isFirstResource: Boolean
                                     ): Boolean {
-                                        hideProgressBar()
                                         return false
                                     }
                                 })
@@ -352,7 +368,6 @@ class ProfileActivity : AppCompatActivity() {
                                 "Download Failure",
                                 error
                         )
-                        hideProgressBar()
                     }
             )
         } else {
@@ -366,7 +381,6 @@ class ProfileActivity : AppCompatActivity() {
                                     target: Target<Drawable>?,
                                     isFirstResource: Boolean
                             ): Boolean {
-                                hideProgressBar()
                                 return false
                             }
 
@@ -377,13 +391,11 @@ class ProfileActivity : AppCompatActivity() {
                                     dataSource: DataSource?,
                                     isFirstResource: Boolean
                             ): Boolean {
-                                hideProgressBar()
                                 return false
                             }
                         })
                         .into(profAct_image_profile_image)
             }
-            hideProgressBar()
         }
     }
 
@@ -428,15 +440,12 @@ class ProfileActivity : AppCompatActivity() {
         super.onActivityResult(requestCode, resultCode, data)
     }
 
-    private fun setupRecycler(profileIdCurrentUser: String) {
+    private fun setupRecycler() {
         val linearLayoutManager = LinearLayoutManager(context)
         profAct_rc_post.layoutManager = linearLayoutManager
-        CoroutineScope(Main).launch {
-            queryPost(profileIdCurrentUser)
-        }
     }
 
-    private suspend fun queryPost(profileIdCurrentUser: String) = withContext(Default) {
+    private suspend fun queryPost(currentUserProfileId: String) = withContext(Default) {
         withContext(Default) {
             posts.clear()
             for (postItem in profiles[0].posts) {
@@ -446,8 +455,8 @@ class ProfileActivity : AppCompatActivity() {
         }
         withContext(Main) {
             val fivePosts = getFivePosts(posts)
-            profAct_rc_post.adapter = PostAdapter(fivePosts, context, profileIdCurrentUser)
-            pageHelper(posts, profileIdCurrentUser)
+            profAct_rc_post.adapter = PostAdapter(fivePosts, context, currentUserProfileId)
+            pageHelper(posts, currentUserProfileId)
         }
     }
 
@@ -610,26 +619,64 @@ class ProfileActivity : AppCompatActivity() {
 
     private fun hideEditProfile() {
         runOnUiThread {
+            profAct_layout_all.visibility = View.INVISIBLE
+            profAct_layout_postrc.visibility = View.VISIBLE
             profAct_text_name.visibility = View.VISIBLE
             profAct_layout_username_and_email.visibility = View.VISIBLE
-            profAct_layout_postrc.visibility = View.VISIBLE
             profAct_edit_name.visibility = View.GONE
             profAct_layout_save_and_cancel.visibility = View.GONE
             profAct_image_camera.visibility = View.GONE
+            profAct_layout_all.visibility = View.VISIBLE
         }
     }
 
     private fun showProgressBar() {
         runOnUiThread {
             profAct_progressbar.visibility = View.VISIBLE
-            profAct_all_layout.visibility = View.GONE
+            profAct_layout_all.visibility = View.GONE
         }
     }
 
     private fun hideProgressBar() {
         runOnUiThread {
             profAct_progressbar.visibility = View.GONE
-            profAct_all_layout.visibility = View.VISIBLE
+            profAct_layout_all.visibility = View.VISIBLE
         }
+    }
+
+    private fun hideKeyboard() {
+        val inputMethodManager = getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
+        inputMethodManager.hideSoftInputFromWindow(currentFocus?.windowToken, 0)
+    }
+
+    override fun dispatchTouchEvent(event: MotionEvent): Boolean {
+        if (event.action == MotionEvent.ACTION_DOWN) {
+            val v = currentFocus
+            if (v is EditText) {
+                val outRect = Rect()
+                v.getGlobalVisibleRect(outRect)
+                if (!outRect.contains(event.rawX.toInt(), event.rawY.toInt())) {
+                    Log.d("focus", "touchevent")
+                    v.clearFocus()
+                    hideKeyboard()
+                }
+            }
+        }
+        return super.dispatchTouchEvent(event)
+    }
+
+    private fun showCancelDialog() {
+        val builder = AlertDialog.Builder(context)
+        builder.setTitle("Cancel Editing")
+        builder.setMessage("Do you want to cancel editing?")
+
+        builder.setPositiveButton(android.R.string.ok) { _, _ ->
+            hideKeyboard()
+            onBackPressed()
+        }
+        builder.setNegativeButton(android.R.string.cancel) { dialog, _ ->
+            dialog.dismiss()
+        }
+        builder.show()
     }
 }

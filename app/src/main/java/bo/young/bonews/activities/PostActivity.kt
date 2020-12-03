@@ -14,6 +14,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.LinearLayoutManager
 import bo.young.bonews.R
 import bo.young.bonews.adapters.PostAdapter
+import bo.young.bonews.interfaces.CallbackListener
 import bo.young.bonews.utilities.Constants
 import com.amplifyframework.api.graphql.model.ModelMutation
 import com.amplifyframework.api.graphql.model.ModelQuery
@@ -33,7 +34,7 @@ import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.Dispatchers.Main
 import java.io.File
 
-class PostActivity : AppCompatActivity() {
+class PostActivity : AppCompatActivity(), CallbackListener {
     private val context = this
 
     companion object {
@@ -74,7 +75,7 @@ class PostActivity : AppCompatActivity() {
     private fun loadUI(profileId: String, postId: String, currentUserName: String, profileIdCurrentUser: String) = runOnUiThread {
         val post = thisPost[0]
         val date = post.date
-        val image = post.image
+        val image = "$postId.jpg"
         val name = post.profile.nickname
         val username = post.profile.username
         val title = post.title
@@ -125,11 +126,10 @@ class PostActivity : AppCompatActivity() {
         postAct_layout_profile.setOnClickListener {
             val intent = Intent(context, ProfileActivity::class.java).apply {
                 putExtra(Constants.PROFILE_ID, profileId)
+                putExtra(Constants.PROFILE_ID_CURRENTUSER, profileIdCurrentUser)
             }
             startActivity(intent)
         }
-
-        hideProgressbar()
     }
 
     private fun loadImage(imagePath: String) {
@@ -211,7 +211,6 @@ class PostActivity : AppCompatActivity() {
         builder.setPositiveButton(android.R.string.ok) { _, _ ->
             CoroutineScope(Main).launch {
                 deletePostFromAWS(deletePost)
-                finish()
             }
         }
         builder.setNegativeButton(android.R.string.cancel) { dialog, _ ->
@@ -254,6 +253,9 @@ class PostActivity : AppCompatActivity() {
                             val fivePosts = getFivePosts(posts)
                             runOnUiThread {
                                 postAct_rc_posts.adapter = PostAdapter(fivePosts, context, profileIdCurrentUser)
+                                postAct_rc_posts.viewTreeObserver.addOnGlobalLayoutListener {
+                                    callback()
+                                }
                                 pageHelper(postId, posts, profileIdCurrentUser)
                             }
                         }
@@ -284,10 +286,32 @@ class PostActivity : AppCompatActivity() {
             }
 
     private suspend fun deletePostFromAWS(postItem: Post) = withContext(IO) {
+        if(postItem.comments.size != 0) {
+            for(commentItem in postItem.comments) {
+                Amplify.API.mutate(
+                        ModelMutation.delete(commentItem),{}, {}
+                )
+            }
+        }
         Amplify.API.mutate(
                 ModelMutation.delete(postItem),
-                { Log.i("MyAmplifyApp", "postItem deleted ") },
+                { result ->
+                    Log.i("MyAmplifyApp", "postItem deleted ")
+                    val id = result.data.id
+                    if(result.data.hasImage) {
+                        deleteImageFromS3("$id.jpg")
+                    }
+                    finish()
+                },
                 { error -> Log.e("MyAmplifyApp", "Create failed", error) }
+        )
+    }
+
+    private fun deleteImageFromS3(fileName: String) {
+        Amplify.Storage.remove(
+                fileName,
+                { result -> Log.i("MyAmplifyApp", "Successfully removed: " + result.getKey()) },
+                { error -> Log.e("MyAmplifyApp", "Remove failure", error) }
         )
     }
 
@@ -384,16 +408,25 @@ class PostActivity : AppCompatActivity() {
 
     private fun showProgressbar() = runOnUiThread {
         postAct_progressbar.visibility = View.VISIBLE
-        postAct_all_layout.visibility = View.INVISIBLE
+        postAct_layout_all.visibility = View.INVISIBLE
     }
 
     private fun hideProgressbar() = runOnUiThread {
         postAct_progressbar.visibility = View.GONE
-        postAct_all_layout.visibility = View.VISIBLE
+        postAct_layout_all.visibility = View.VISIBLE
     }
 
     override fun onBackPressed() {
         super.onBackPressed()
         finish()
+    }
+
+    override fun callback() {
+        coroutineScope.launch {
+            postAct_nestedScrollView.scrollTo(0, 0)
+            delay(700L)
+            hideProgressbar()
+            postAct_rc_posts.viewTreeObserver.removeOnGlobalLayoutListener { }
+        }
     }
 }

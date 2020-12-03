@@ -1,9 +1,15 @@
 package bo.young.bonews.activities
 
+import android.app.Activity
+import android.content.Context
+import android.graphics.Rect
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.view.MotionEvent
 import android.view.View
+import android.view.inputmethod.InputMethodManager
+import android.widget.EditText
 import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import bo.young.bonews.R
@@ -67,6 +73,7 @@ class CommentActivity : AppCompatActivity() {
                     } else {
                         uploadComment(profileIdCurrentUser, date, content, currentPost!!)
                         commentAct_rc_posts.scrollToPosition(0)
+                        hideKeyboard()
                     }
                 }
             }
@@ -178,4 +185,24 @@ class CommentActivity : AppCompatActivity() {
         finish()
         super.onBackPressed()
     }
+
+    private fun hideKeyboard() {
+        val inputMethodManager = getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
+        inputMethodManager.hideSoftInputFromWindow(currentFocus?.windowToken, 0)
+    }
+
+    override fun dispatchTouchEvent(event: MotionEvent): Boolean {
+        if (event.action == MotionEvent.ACTION_DOWN) {
+            val v = currentFocus
+            if (v is EditText) {
+                val outRect = Rect()
+                v.getGlobalVisibleRect(outRect)
+                if (!outRect.contains(event.rawX.toInt(), event.rawY.toInt())) {
+                    Log.d("focus", "touchevent")
+                    v.clearFocus()
+                    hideKeyboard()
+                }
+            }
+        }
+        return super.dispatchTouchEvent(event)}
 }
