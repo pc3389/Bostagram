@@ -28,25 +28,21 @@
             app:layout_constraintTop_toTopOf="parent"
             android:background="?attr/colorPrimary">
 
-            <TextView
-                android:id="@+id/uploadAct_text_back_bt"
+            <ImageView
+                android:id="@+id/uploadAct_image_back_bt"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:paddingHorizontal="20dp"
-                android:textColor="?attr/colorOnPrimary"
-                android:paddingVertical="10dp"
-                android:text="Back"
+                android:src="@drawable/ic_arrow_back_24"
+                android:padding="@dimen/iconPadding"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
-            <TextView
-                android:id="@+id/uploadAct_text_save"
+            <ImageView
+                android:id="@+id/uploadAct_image_save"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="?attr/colorOnPrimary"
-                android:paddingHorizontal="20dp"
-                android:paddingVertical="10dp"
-                android:text="Post"
+                android:src="@drawable/ic_save_24"
+                android:padding="@dimen/iconPadding"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
@@ -69,7 +65,7 @@
                     android:background="@null"
                     android:hint="Title"
                     android:textSize="22sp"
-                    android:padding="20dp"
+                    android:padding="@dimen/layoutPadding"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
@@ -99,7 +95,7 @@
                     android:textSize="@dimen/small_text_size"
                     android:gravity="top"
                     android:hint="Contents"
-                    android:padding="20dp"
+                    android:padding="@dimen/layoutPadding"
                     app:layout_constraintTop_toBottomOf="@id/uploadAct_image_postImage" />
             </androidx.constraintlayout.widget.ConstraintLayout>
         </ScrollView>
@@ -113,14 +109,12 @@
             app:layout_constraintStart_toStartOf="parent"
             android:background="?attr/colorPrimary">
 
-            <TextView
-                android:id="@+id/uploadAct_text_add_photo_bt"
+            <ImageView
+                android:id="@+id/uploadAct_image_add_photo_bt"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="?attr/colorOnPrimary"
-                android:paddingHorizontal="20dp"
-                android:paddingVertical="10dp"
-                android:text="Add Photo"
+                android:src="@drawable/ic_camera_onprimary"
+                android:padding="@dimen/iconPadding"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
@@ -133,7 +127,8 @@
                 android:paddingVertical="10dp"
                 android:text="Save Draft"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"/>
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>

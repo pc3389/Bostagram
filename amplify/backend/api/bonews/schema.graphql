@@ -28,6 +28,7 @@ type Post @model @key(name: "byProfile", fields: ["profileID"]) {
   image: String
   hasImage: Boolean
   profile: Profile @connection(fields: ["profileID"])
+  likes: [Like] @connection(keyName: "byPost", fields: ["id"])
   comments: [Comment] @connection(keyName: "byPost", fields: ["id"])
 }
 
@@ -44,6 +45,14 @@ type Comment @model @key(name: "byPost", fields: ["postID", "content"]) {
   name: String!
   post: Post @connection(fields: ["postID"])
   content: String!
+}
+
+type Like @model @key(name: "byPost", fields: ["postID"]) {
+  id: ID!
+  postID: ID!
+  profileID: ID!
+  date: String!
+  post: Post @connection(fields: ["postID"])
 }
 
 enum PostStatus {

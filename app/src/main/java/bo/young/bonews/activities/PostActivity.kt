@@ -109,7 +109,7 @@ class PostActivity : AppCompatActivity(), CallbackListener {
 
         if (username != null) {
             setupRecycler(profileId, postId, profileIdCurrentUser)
-            setupMenu(username, profileId, currentUserName)
+            setupMenu(username, profileId, currentUserName, postId)
         }
 
 
@@ -163,8 +163,7 @@ class PostActivity : AppCompatActivity(), CallbackListener {
         }
     }
 
-    //TODO auto update edit
-    private fun setupMenu(postUsername: String, profileId: String, currentUserName: String) {
+    private fun setupMenu(postUsername: String, profileId: String, currentUserName: String, postId: String) {
         if (postUsername == currentUserName) {
             postAct_image_menu_bt.setOnClickListener {
                 val popupMenu = PopupMenu(this@PostActivity, postAct_image_menu_bt)
@@ -173,6 +172,7 @@ class PostActivity : AppCompatActivity(), CallbackListener {
                     if (it.itemId == R.id.action_edit) {
                         val intent = Intent(context, UploadActivity::class.java).apply {
                             putExtra(Constants.PROFILE_ID, profileId)
+                            putExtra(Constants.POST_ID, postId)
                         }
                         startActivity(intent)
                     }

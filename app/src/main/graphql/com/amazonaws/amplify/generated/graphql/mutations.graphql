@@ -244,6 +244,17 @@ mutation CreatePost(
       createdAt
       updatedAt
     }
+    likes {
+      items {
+        id
+        postID
+        profileID
+        date
+        createdAt
+        updatedAt
+      }
+      nextToken
+    }
     comments {
       items {
         id
@@ -290,6 +301,17 @@ mutation UpdatePost(
       createdAt
       updatedAt
     }
+    likes {
+      items {
+        id
+        postID
+        profileID
+        date
+        createdAt
+        updatedAt
+      }
+      nextToken
+    }
     comments {
       items {
         id
@@ -335,6 +357,17 @@ mutation DeletePost(
       }
       createdAt
       updatedAt
+    }
+    likes {
+      items {
+        id
+        postID
+        profileID
+        date
+        createdAt
+        updatedAt
+      }
+      nextToken
     }
     comments {
       items {
@@ -418,6 +451,9 @@ mutation CreateComment(
         createdAt
         updatedAt
       }
+      likes {
+        nextToken
+      }
       comments {
         nextToken
       }
@@ -457,6 +493,9 @@ mutation UpdateComment(
         backgroundImage
         createdAt
         updatedAt
+      }
+      likes {
+        nextToken
       }
       comments {
         nextToken
@@ -498,6 +537,9 @@ mutation DeleteComment(
         createdAt
         updatedAt
       }
+      likes {
+        nextToken
+      }
       comments {
         nextToken
       }
@@ -505,6 +547,129 @@ mutation DeleteComment(
       updatedAt
     }
     content
+    createdAt
+    updatedAt
+  }
+}
+mutation CreateLike(
+  $input: CreateLikeInput!
+  $condition: ModelLikeConditionInput
+) {
+  createLike(input: $input, condition: $condition) {
+    id
+    postID
+    profileID
+    date
+    post {
+      id
+      title
+      status
+      date
+      profileID
+      contents
+      image
+      hasImage
+      profile {
+        id
+        username
+        nickname
+        emailAddress
+        hasImage
+        backgroundImage
+        createdAt
+        updatedAt
+      }
+      likes {
+        nextToken
+      }
+      comments {
+        nextToken
+      }
+      createdAt
+      updatedAt
+    }
+    createdAt
+    updatedAt
+  }
+}
+mutation UpdateLike(
+  $input: UpdateLikeInput!
+  $condition: ModelLikeConditionInput
+) {
+  updateLike(input: $input, condition: $condition) {
+    id
+    postID
+    profileID
+    date
+    post {
+      id
+      title
+      status
+      date
+      profileID
+      contents
+      image
+      hasImage
+      profile {
+        id
+        username
+        nickname
+        emailAddress
+        hasImage
+        backgroundImage
+        createdAt
+        updatedAt
+      }
+      likes {
+        nextToken
+      }
+      comments {
+        nextToken
+      }
+      createdAt
+      updatedAt
+    }
+    createdAt
+    updatedAt
+  }
+}
+mutation DeleteLike(
+  $input: DeleteLikeInput!
+  $condition: ModelLikeConditionInput
+) {
+  deleteLike(input: $input, condition: $condition) {
+    id
+    postID
+    profileID
+    date
+    post {
+      id
+      title
+      status
+      date
+      profileID
+      contents
+      image
+      hasImage
+      profile {
+        id
+        username
+        nickname
+        emailAddress
+        hasImage
+        backgroundImage
+        createdAt
+        updatedAt
+      }
+      likes {
+        nextToken
+      }
+      comments {
+        nextToken
+      }
+      createdAt
+      updatedAt
+    }
     createdAt
     updatedAt
   }

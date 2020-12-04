@@ -232,6 +232,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun showProgressBar() {
         runOnUiThread {
+            mainAct_layout_all.visibility = View.INVISIBLE
             mainAct_itemsswipetorefresh.visibility = View.INVISIBLE
             mainAct_rc_posts.visibility = View.GONE
             mainAct_progressbar.visibility = View.VISIBLE
@@ -253,6 +254,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun hideProgressBar() {
         runOnUiThread {
+            mainAct_layout_all.visibility = View.VISIBLE
             mainAct_itemsswipetorefresh.visibility = View.VISIBLE
             mainAct_rc_posts.visibility = View.VISIBLE
             mainAct_progressbar.visibility = View.GONE

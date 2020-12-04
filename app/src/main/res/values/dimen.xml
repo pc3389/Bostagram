@@ -3,4 +3,6 @@
     <dimen name="small_text_size">15sp</dimen>
     <dimen name="large_text_size">22sp</dimen>
     <dimen name="toolbar_text_size">28sp</dimen>
+    <dimen name="iconPadding">15dp</dimen>
+    <dimen name="layoutPadding">15dp</dimen>
 </resources>

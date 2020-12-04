@@ -3,7 +3,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="bo.young.bonews">
 
-
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.INTERNET" />
 
@@ -16,6 +15,8 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.BoNews"
         tools:replace="android:name">
+        <activity android:name=".activities.LikeActivity"
+            android:screenOrientation="portrait"/>
         <activity
             android:name=".activities.CommentActivity"
             android:screenOrientation="portrait" />
@@ -46,7 +47,6 @@
         <activity
             android:name=".activities.LoginActivity"
             android:screenOrientation="portrait">
-
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

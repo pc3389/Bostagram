@@ -223,6 +223,17 @@ subscription OnCreatePost {
       createdAt
       updatedAt
     }
+    likes {
+      items {
+        id
+        postID
+        profileID
+        date
+        createdAt
+        updatedAt
+      }
+      nextToken
+    }
     comments {
       items {
         id
@@ -266,6 +277,17 @@ subscription OnUpdatePost {
       createdAt
       updatedAt
     }
+    likes {
+      items {
+        id
+        postID
+        profileID
+        date
+        createdAt
+        updatedAt
+      }
+      nextToken
+    }
     comments {
       items {
         id
@@ -308,6 +330,17 @@ subscription OnDeletePost {
       }
       createdAt
       updatedAt
+    }
+    likes {
+      items {
+        id
+        postID
+        profileID
+        date
+        createdAt
+        updatedAt
+      }
+      nextToken
     }
     comments {
       items {
@@ -379,6 +412,9 @@ subscription OnCreateComment {
         createdAt
         updatedAt
       }
+      likes {
+        nextToken
+      }
       comments {
         nextToken
       }
@@ -415,6 +451,9 @@ subscription OnUpdateComment {
         backgroundImage
         createdAt
         updatedAt
+      }
+      likes {
+        nextToken
       }
       comments {
         nextToken
@@ -453,6 +492,9 @@ subscription OnDeleteComment {
         createdAt
         updatedAt
       }
+      likes {
+        nextToken
+      }
       comments {
         nextToken
       }
@@ -460,6 +502,120 @@ subscription OnDeleteComment {
       updatedAt
     }
     content
+    createdAt
+    updatedAt
+  }
+}
+subscription OnCreateLike {
+  onCreateLike {
+    id
+    postID
+    profileID
+    date
+    post {
+      id
+      title
+      status
+      date
+      profileID
+      contents
+      image
+      hasImage
+      profile {
+        id
+        username
+        nickname
+        emailAddress
+        hasImage
+        backgroundImage
+        createdAt
+        updatedAt
+      }
+      likes {
+        nextToken
+      }
+      comments {
+        nextToken
+      }
+      createdAt
+      updatedAt
+    }
+    createdAt
+    updatedAt
+  }
+}
+subscription OnUpdateLike {
+  onUpdateLike {
+    id
+    postID
+    profileID
+    date
+    post {
+      id
+      title
+      status
+      date
+      profileID
+      contents
+      image
+      hasImage
+      profile {
+        id
+        username
+        nickname
+        emailAddress
+        hasImage
+        backgroundImage
+        createdAt
+        updatedAt
+      }
+      likes {
+        nextToken
+      }
+      comments {
+        nextToken
+      }
+      createdAt
+      updatedAt
+    }
+    createdAt
+    updatedAt
+  }
+}
+subscription OnDeleteLike {
+  onDeleteLike {
+    id
+    postID
+    profileID
+    date
+    post {
+      id
+      title
+      status
+      date
+      profileID
+      contents
+      image
+      hasImage
+      profile {
+        id
+        username
+        nickname
+        emailAddress
+        hasImage
+        backgroundImage
+        createdAt
+        updatedAt
+      }
+      likes {
+        nextToken
+      }
+      comments {
+        nextToken
+      }
+      createdAt
+      updatedAt
+    }
     createdAt
     updatedAt
   }

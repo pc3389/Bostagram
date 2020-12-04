@@ -23,9 +23,11 @@ import static com.amplifyframework.core.model.query.predicate.QueryField.field;
 public final class Like implements Model {
   public static final QueryField ID = field("id");
   public static final QueryField PROFILE_ID = field("profileID");
+  public static final QueryField DATE = field("date");
   public static final QueryField POST = field("postID");
   private final @ModelField(targetType="ID", isRequired = true) String id;
   private final @ModelField(targetType="ID", isRequired = true) String profileID;
+  private final @ModelField(targetType="String", isRequired = true) String date;
   private final @ModelField(targetType="Post") @BelongsTo(targetName = "postID", type = Post.class) Post post;
   public String getId() {
       return id;
@@ -35,13 +37,18 @@ public final class Like implements Model {
       return profileID;
   }
   
+  public String getDate() {
+      return date;
+  }
+  
   public Post getPost() {
       return post;
   }
   
-  private Like(String id, String profileID, Post post) {
+  private Like(String id, String profileID, String date, Post post) {
     this.id = id;
     this.profileID = profileID;
+    this.date = date;
     this.post = post;
   }
   
@@ -55,6 +62,7 @@ public final class Like implements Model {
       Like like = (Like) obj;
       return ObjectsCompat.equals(getId(), like.getId()) &&
               ObjectsCompat.equals(getProfileId(), like.getProfileId()) &&
+              ObjectsCompat.equals(getDate(), like.getDate()) &&
               ObjectsCompat.equals(getPost(), like.getPost());
       }
   }
@@ -64,6 +72,7 @@ public final class Like implements Model {
     return new StringBuilder()
       .append(getId())
       .append(getProfileId())
+      .append(getDate())
       .append(getPost())
       .toString()
       .hashCode();
@@ -75,6 +84,7 @@ public final class Like implements Model {
       .append("Like {")
       .append("id=" + String.valueOf(getId()) + ", ")
       .append("profileID=" + String.valueOf(getProfileId()) + ", ")
+      .append("date=" + String.valueOf(getDate()) + ", ")
       .append("post=" + String.valueOf(getPost()))
       .append("}")
       .toString();
@@ -106,6 +116,7 @@ public final class Like implements Model {
     return new Like(
       id,
       null,
+      null,
       null
     );
   }
@@ -113,10 +124,16 @@ public final class Like implements Model {
   public CopyOfBuilder copyOfBuilder() {
     return new CopyOfBuilder(id,
       profileID,
+      date,
       post);
   }
   public interface ProfileIdStep {
-    BuildStep profileId(String profileId);
+    DateStep profileId(String profileId);
+  }
+  
+
+  public interface DateStep {
+    BuildStep date(String date);
   }
   
 
@@ -127,9 +144,10 @@ public final class Like implements Model {
   }
   
 
-  public static class Builder implements ProfileIdStep, BuildStep {
+  public static class Builder implements ProfileIdStep, DateStep, BuildStep {
     private String id;
     private String profileID;
+    private String date;
     private Post post;
     @Override
      public Like build() {
@@ -138,13 +156,21 @@ public final class Like implements Model {
         return new Like(
           id,
           profileID,
+          date,
           post);
     }
     
     @Override
-     public BuildStep profileId(String profileId) {
+     public DateStep profileId(String profileId) {
         Objects.requireNonNull(profileId);
         this.profileID = profileId;
+        return this;
+    }
+    
+    @Override
+     public BuildStep date(String date) {
+        Objects.requireNonNull(date);
+        this.date = date;
         return this;
     }
     
@@ -177,15 +203,21 @@ public final class Like implements Model {
   
 
   public final class CopyOfBuilder extends Builder {
-    private CopyOfBuilder(String id, String profileId, Post post) {
+    private CopyOfBuilder(String id, String profileId, String date, Post post) {
       super.id(id);
       super.profileId(profileId)
+        .date(date)
         .post(post);
     }
     
     @Override
      public CopyOfBuilder profileId(String profileId) {
       return (CopyOfBuilder) super.profileId(profileId);
+    }
+    
+    @Override
+     public CopyOfBuilder date(String date) {
+      return (CopyOfBuilder) super.date(date);
     }
     
     @Override

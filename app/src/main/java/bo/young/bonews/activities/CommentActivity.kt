@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import bo.young.bonews.R
 import bo.young.bonews.adapters.CommentAdapter
 import bo.young.bonews.adapters.PostAdapter
+import bo.young.bonews.interfaces.CallbackListener
 import bo.young.bonews.utilities.Constants
 import com.amplifyframework.api.graphql.model.ModelMutation
 import com.amplifyframework.api.graphql.model.ModelQuery
@@ -36,7 +37,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
 
-class CommentActivity : AppCompatActivity() {
+class CommentActivity : AppCompatActivity(), CallbackListener {
     val context = this
     private val coroutineScope = CoroutineScope(Main)
     private var currentProfile: Profile? = null
@@ -44,6 +45,7 @@ class CommentActivity : AppCompatActivity() {
     private val commentList: ArrayList<Comment> = ArrayList()
     private var hasProfile = false
     private var hasPosts = false
+    private val profileMap: HashMap<String, String> = HashMap()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -61,6 +63,7 @@ class CommentActivity : AppCompatActivity() {
             if (profileIdCurrentUser != null && postId != null) {
                 queryProfile(profileIdCurrentUser, postId)
             }
+
         }
 
         commentAct_image_send.setOnClickListener {
@@ -118,13 +121,32 @@ class CommentActivity : AppCompatActivity() {
                     if (currentPost != null) {
                         for (commentItem in currentPost!!.comments) {
                             commentList.add(commentItem)
+                            profileMap[commentItem.profileId] = commentItem.name
                         }
-                        runOnUiThread {
-                            commentList.sortByDescending { it.date }
-                            commentAct_rc_posts.adapter = CommentAdapter(commentList, context, currentProfile!!.id)
-                            commentAct_rc_posts.scrollToPosition(0)
+                        commentList.sortByDescending { it.date }
+                        var count = 0
+                        val maxCount = profileMap.keys.size
+                        for (profileId in profileMap.keys) {
+                            Amplify.API.query(
+                                    ModelQuery.get(Profile::class.java, profileId),
+                                    { profileResponse ->
+                                        val profileItem = profileResponse.data
+                                        if (profileMap[profileItem.id] != profileItem.nickname) {
+                                            profileMap[profileItem.id] = profileItem.nickname
+                                        }
+                                        count++
+                                        if (count == maxCount) {
+                                            callback()
+                                        }
+                                    },
+                                    { error ->
+                                        Log.e("MyAmplifyApp", "Query failure", error)
+                                        count++
+                                        if (count == maxCount) {
+                                            callback()
+                                        }
+                                    })
                         }
-
                     }
                     hasPosts = true
                     if (hasProfile) {
@@ -142,7 +164,7 @@ class CommentActivity : AppCompatActivity() {
                 val comment = Comment.builder()
                         .profileId(profileId)
                         .date(date)
-                        .name(post.profile.nickname)
+                        .name(currentProfile?.nickname)
                         .content(content)
                         .post(post)
                         .build()
@@ -152,11 +174,9 @@ class CommentActivity : AppCompatActivity() {
                         ModelMutation.create(comment),
                         { response ->
                             Log.i("MyAmplifyApp", "Todo with id: " + response.data.id)
-                            commentList.add(0,response.data)
-                            runOnUiThread {
-                                commentAct_rc_posts.adapter = CommentAdapter(commentList, context, currentProfile!!.id)
-                                commentAct_rc_posts.scrollToPosition(0)
-                            }
+                            commentList.add(0, response.data)
+                            profileMap[response.data.profileId] = currentProfile!!.nickname
+                            callback()
                         },
                         { error -> Log.e("MyAmplifyApp", "Create failed", error) }
                 )
@@ -204,5 +224,11 @@ class CommentActivity : AppCompatActivity() {
                 }
             }
         }
-        return super.dispatchTouchEvent(event)}
+        return super.dispatchTouchEvent(event)
+    }
+
+    override fun callback() = runOnUiThread {
+        commentAct_rc_posts.adapter = CommentAdapter(commentList, context, currentProfile!!.id, profileMap)
+        commentAct_rc_posts.scrollToPosition(0)
+    }
 }

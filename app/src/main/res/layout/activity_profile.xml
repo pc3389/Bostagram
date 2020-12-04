@@ -99,7 +99,7 @@
                 android:id="@+id/profAct_layout_profile"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:paddingHorizontal="20dp"
+                android:paddingHorizontal="@dimen/layoutPadding"
                 app:layout_constraintTop_toTopOf="parent">
 
                 <com.mikhaellopez.circularimageview.CircularImageView
@@ -121,7 +121,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:visibility="gone"
-                    android:src="@drawable/ic_camera_24"
+                    android:src="@drawable/ic_camera_secondary"
                     app:layout_constraintBottom_toBottomOf="@id/profAct_image_profile_image"
                     app:layout_constraintEnd_toEndOf="@id/profAct_image_profile_image" />
 
@@ -132,7 +132,7 @@
                     android:layout_height="wrap_content"
                     android:textColor="?attr/colorOnBackground"
                     android:maxLines="1"
-                    android:padding="20dp"
+                    android:padding="@dimen/layoutPadding"
                     android:textSize="30sp"
                     android:textStyle="bold"
                     app:layout_constraintEnd_toEndOf="parent"
@@ -149,7 +149,7 @@
                     android:inputType="text"
                     android:maxLength="20"
                     android:maxLines="1"
-                    android:padding="20dp"
+                    android:padding="@dimen/layoutPadding"
                     android:textAlignment="center"
                     android:textSize="30sp"
                     android:textStyle="bold"

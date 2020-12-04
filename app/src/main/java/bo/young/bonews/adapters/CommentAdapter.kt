@@ -6,9 +6,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.RecyclerView
 import bo.young.bonews.R
@@ -17,16 +15,12 @@ import bo.young.bonews.utilities.Constants
 import com.amplifyframework.api.graphql.model.ModelMutation
 import com.amplifyframework.core.Amplify
 import com.amplifyframework.datastore.generated.model.Comment
-import com.amplifyframework.datastore.generated.model.Post
-import com.bumptech.glide.Glide
 import kotlinx.android.synthetic.main.list_item_comment.view.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import java.io.File
 
-class CommentAdapter(private val items: ArrayList<Comment>, val context: Context, private val profileIdCurrentUser: String) :
+class CommentAdapter(private val items: ArrayList<Comment>, val context: Context, private val profileIdCurrentUser: String, private val profileMap: HashMap<String, String>) :
         RecyclerView.Adapter<CommentAdapter.ViewHolder>() {
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
@@ -50,20 +44,21 @@ class CommentAdapter(private val items: ArrayList<Comment>, val context: Context
             if(items[position] == null) {
                 holder.nameTextView.text = "null"
             } else {
+                val profileId = items[position].profileId
                 val date = items[position].date
                 holder.dateTextView.text = date
-                val name = items[position].name
+                val name = profileMap[profileId]
                 holder.nameTextView.text = name
                 val content = items[position].content
                 holder.contentTextView.text = content
                 holder.nameTextView.setOnClickListener {
                     val intent = Intent(context, ProfileActivity::class.java).apply {
-                        putExtra(Constants.PROFILE_ID, items[position].profileId)
+                        putExtra(Constants.PROFILE_ID, profileId)
                     }
                     context.startActivity(intent)
                 }
 
-                if (items[position].profileId == profileIdCurrentUser || Amplify.Auth.currentUser.username == "pc3389") {
+                if (profileId == profileIdCurrentUser || Amplify.Auth.currentUser.username == "pc3389") {
                     holder.itemView.setOnLongClickListener {
                         showDeleteDialog(items[position])
                         true

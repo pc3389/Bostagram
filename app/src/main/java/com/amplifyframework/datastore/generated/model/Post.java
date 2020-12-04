@@ -38,6 +38,7 @@ public final class Post implements Model {
   private final @ModelField(targetType="String") String image;
   private final @ModelField(targetType="Boolean") Boolean hasImage;
   private final @ModelField(targetType="Profile") @BelongsTo(targetName = "profileID", type = Profile.class) Profile profile;
+  private final @ModelField(targetType="Like") @HasMany(associatedWith = "post", type = Like.class) List<Like> likes = null;
   private final @ModelField(targetType="Comment") @HasMany(associatedWith = "post", type = Comment.class) List<Comment> comments = null;
   public String getId() {
       return id;
@@ -69,6 +70,10 @@ public final class Post implements Model {
   
   public Profile getProfile() {
       return profile;
+  }
+  
+  public List<Like> getLikes() {
+      return likes;
   }
   
   public List<Comment> getComments() {
