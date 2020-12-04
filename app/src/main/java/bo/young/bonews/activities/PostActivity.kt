@@ -97,7 +97,7 @@ class PostActivity : AppCompatActivity(), CallbackListener {
         postAct_text_name.text = name
         postAct_text_content.text = content
         val commentSize = "$comments comments"
-        postAct_text_comments.text = commentSize
+        postAct_text_comments_number.text = commentSize
 
         val recyclerTitle = "Other posts from $name"
         postAct_text_recycler_title.text = recyclerTitle
@@ -114,7 +114,7 @@ class PostActivity : AppCompatActivity(), CallbackListener {
 
 
 
-        postAct_text_comments.setOnClickListener {
+        postAct_layout_comment.setOnClickListener {
             val intent = Intent(context, CommentActivity::class.java).apply {
                 putExtra(Constants.PROFILE_ID_CURRENTUSER, profileIdCurrentUser)
                 putExtra(Constants.PROFILE_ID, profileId)
@@ -330,11 +330,11 @@ class PostActivity : AppCompatActivity(), CallbackListener {
 
     private fun pageHelper(id: String?, posts: ArrayList<Post>, profileIdCurrentUser: String) {
         if (postNumber - 5 <= 0) {
-            postAct_frame_previous_page.visibility = View.INVISIBLE
-            postAct_frame_previous_page.isClickable = false
+            postAct_image_previous_page.visibility = View.INVISIBLE
+            postAct_image_previous_page.isClickable = false
         } else {
-            postAct_frame_previous_page.visibility = View.VISIBLE
-            postAct_frame_previous_page.isClickable = true
+            postAct_image_previous_page.visibility = View.VISIBLE
+            postAct_image_previous_page.isClickable = true
             Glide.with(context)
                     .load(R.drawable.previous_page_available)
                     .listener(object : RequestListener<Drawable> {
@@ -354,7 +354,7 @@ class PostActivity : AppCompatActivity(), CallbackListener {
                                 dataSource: DataSource?,
                                 isFirstResource: Boolean
                         ): Boolean {
-                            postAct_frame_previous_page.setOnClickListener {
+                            postAct_image_previous_page.setOnClickListener {
                                 if (id != null) {
                                     postNumber -= 10
                                     val fivePosts = getFivePosts(posts)
@@ -368,11 +368,11 @@ class PostActivity : AppCompatActivity(), CallbackListener {
                     .into(postAct_image_previous_page)
         }
         if (postNumber >= posts.size) {
-            postAct_frame_next_page.isClickable = false
-            postAct_frame_next_page.visibility = View.INVISIBLE
+            postAct_image_next_page.isClickable = false
+            postAct_image_next_page.visibility = View.INVISIBLE
         } else {
-            postAct_frame_next_page.isClickable = true
-            postAct_frame_next_page.visibility = View.VISIBLE
+            postAct_image_next_page.isClickable = true
+            postAct_image_next_page.visibility = View.VISIBLE
             Glide.with(context)
                     .load(R.drawable.next_page_available_24)
                     .listener(object : RequestListener<Drawable> {
@@ -392,7 +392,7 @@ class PostActivity : AppCompatActivity(), CallbackListener {
                                 dataSource: DataSource?,
                                 isFirstResource: Boolean
                         ): Boolean {
-                            postAct_frame_next_page.setOnClickListener {
+                            postAct_image_next_page.setOnClickListener {
                                 if (id != null) {
                                     val fivePosts = getFivePosts(posts)
                                     postAct_rc_posts.adapter = PostAdapter(fivePosts, context, profileIdCurrentUser)

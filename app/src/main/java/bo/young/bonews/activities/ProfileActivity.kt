@@ -495,7 +495,7 @@ class ProfileActivity : AppCompatActivity() {
                                 dataSource: DataSource?,
                                 isFirstResource: Boolean
                         ): Boolean {
-                            profAct_frame_previous_page.isClickable = false
+                            profAct_image_previous_page.isClickable = false
                             return false
                         }
                     })
@@ -520,7 +520,7 @@ class ProfileActivity : AppCompatActivity() {
                                 dataSource: DataSource?,
                                 isFirstResource: Boolean
                         ): Boolean {
-                            profAct_frame_previous_page.setOnClickListener {
+                            profAct_image_previous_page.setOnClickListener {
                                 postNumber -= 10
                                 val fivePosts = getFivePosts(posts)
                                 profAct_rc_post.adapter = PostAdapter(fivePosts, context, profileIdCurrentUser)
@@ -551,7 +551,7 @@ class ProfileActivity : AppCompatActivity() {
                                 dataSource: DataSource?,
                                 isFirstResource: Boolean
                         ): Boolean {
-                            profAct_frame_next_page.isClickable = false
+                            profAct_image_next_page.isClickable = false
                             return false
                         }
                     })
@@ -576,7 +576,7 @@ class ProfileActivity : AppCompatActivity() {
                                 dataSource: DataSource?,
                                 isFirstResource: Boolean
                         ): Boolean {
-                            profAct_frame_next_page.setOnClickListener {
+                            profAct_image_next_page.setOnClickListener {
                                 val fivePosts = getFivePosts(posts)
                                 profAct_rc_post.adapter = PostAdapter(fivePosts, context, profileIdCurrentUser)
                                 pageHelper(posts, profileIdCurrentUser)

@@ -96,7 +96,7 @@
             android:maxLines="2"
             android:textColor="?attr/colorOnBackground"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/item_main_text_title"
+            app:layout_constraintTop_toBottomOf="@+id/item_main_image_postImage"
             tools:text="Contents" />
 
         <TextView

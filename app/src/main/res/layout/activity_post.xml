@@ -173,24 +173,72 @@
                     app:layout_constraintTop_toBottomOf="@id/postAct_image_post_image"
                     tools:text="Contents" />
 
-                <TextView
-                    android:id="@+id/postAct_text_comments"
-                    android:layout_width="0dp"
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/postAct_layout_comment_and_like"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:padding="@dimen/layoutPadding"
-                    android:textColor="?attr/colorOnBackground"
-                    android:textSize="@dimen/small_text_size"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintHorizontal_bias="0.0"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/postAct_text_content"
-                    tools:text="Comments" />
+                    app:layout_constraintTop_toBottomOf="@+id/postAct_text_content">
+
+                    <ImageView
+                        android:id="@+id/postAct_image_like_bt"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/layoutPadding"
+                        android:padding="10dp"
+                        android:src="@drawable/ic_thumb_up_not_selected24"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <TextView
+                        android:id="@+id/postAct_text_likes_number"
+                        android:layout_width="wrap_content"
+                        android:layout_height="0dp"
+                        android:gravity="center_vertical"
+                        android:paddingEnd="20dp"
+                        android:textColor="?attr/colorOnBackground"
+                        android:textSize="@dimen/small_text_size"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintHorizontal_bias="0.0"
+                        app:layout_constraintStart_toEndOf="@id/postAct_image_like_bt"
+                        app:layout_constraintTop_toTopOf="@id/postAct_image_like_bt"
+                        tools:text="2" />
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:id="@+id/postAct_layout_comment"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        app:layout_constraintStart_toEndOf="@id/postAct_text_likes_number"
+                        app:layout_constraintTop_toTopOf="@id/postAct_text_likes_number">
+
+                        <ImageView
+                            android:id="@+id/postAct_image_comment_bt"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:padding="10dp"
+                            android:src="@drawable/ic_comment_24"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent" />
+
+                        <TextView
+                            android:id="@+id/postAct_text_comments_number"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:paddingEnd="10dp"
+                            android:textColor="?attr/colorOnBackground"
+                            android:textSize="@dimen/small_text_size"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintStart_toEndOf="@id/postAct_image_comment_bt"
+                            app:layout_constraintTop_toTopOf="parent"
+                            tools:text="2" />
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
 
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:id="@+id/postAct_layout_post_recycler"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    app:layout_constraintTop_toBottomOf="@id/postAct_text_comments">
+                    app:layout_constraintTop_toBottomOf="@id/postAct_layout_comment_and_like">
 
                     <View
                         android:id="@+id/separation"
@@ -234,7 +282,6 @@
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:padding="10dp"
                     app:layout_constraintTop_toBottomOf="@id/postAct_layout_post_recycler">
 
                     <androidx.constraintlayout.widget.Guideline
@@ -244,71 +291,27 @@
                         android:orientation="vertical"
                         app:layout_constraintGuide_percent="0.5" />
 
-                    <FrameLayout
-                        android:id="@+id/postAct_frame_next_page"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="40dp"
-                        android:background="?android:windowBackground"
-                        android:padding="5dp"
-                        android:visibility="invisible"
-                        app:layout_constraintStart_toStartOf="@id/guideline_recycler"
-                        app:layout_constraintTop_toTopOf="parent">
-
-                        <FrameLayout
+                        <ImageView
+                            android:id="@+id/postAct_image_next_page"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:background="?attr/colorOnBackground"
-                            android:padding="1dp"
-                            app:layout_constraintEnd_toEndOf="parent"
-                            app:layout_constraintTop_toTopOf="parent"
-                            tools:ignore="UselessParent">
+                            android:background="?android:windowBackground"
+                            android:padding="5dp"
+                            android:src="@drawable/next_page_available_24"
+                            android:layout_marginStart="40dp"
+                            app:layout_constraintStart_toStartOf="@id/guideline_recycler"
+                            app:layout_constraintTop_toTopOf="parent" />
 
-                            <ImageView
-                                android:id="@+id/postAct_image_next_page"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:background="?android:windowBackground"
-                                android:padding="5dp"
-                                android:src="@drawable/next_page_available_24"
-                                app:layout_constraintEnd_toEndOf="parent"
-                                app:layout_constraintTop_toTopOf="parent" />
-                        </FrameLayout>
-                    </FrameLayout>
-
-                    <FrameLayout
-                        android:id="@+id/postAct_frame_previous_page"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginEnd="40dp"
-                        android:background="?android:windowBackground"
-                        android:padding="5dp"
-                        android:visibility="invisible"
-                        app:layout_constraintEnd_toEndOf="@id/guideline_recycler"
-                        app:layout_constraintTop_toTopOf="parent">
-
-                        <FrameLayout
-                            android:layout_width="wrap_content"
+                        <ImageView
+                            android:id="@+id/postAct_image_previous_page"
+                            android:layout_width="36dp"
                             android:layout_height="wrap_content"
-                            android:background="?attr/colorOnBackground"
-                            android:padding="1dp"
-                            app:layout_constraintEnd_toEndOf="parent"
-                            app:layout_constraintTop_toTopOf="parent"
-                            tools:ignore="UselessParent">
-
-                            <ImageView
-                                android:id="@+id/postAct_image_previous_page"
-                                android:layout_width="36dp"
-                                android:layout_height="wrap_content"
-                                android:background="?android:windowBackground"
-                                android:padding="5dp"
-                                android:src="@drawable/previous_page_available"
-                                app:layout_constraintEnd_toEndOf="parent"
-                                app:layout_constraintTop_toTopOf="parent" />
-                        </FrameLayout>
-                    </FrameLayout>
-
-
+                            android:background="?android:windowBackground"
+                            android:padding="5dp"
+                            android:layout_marginEnd="40dp"
+                            android:src="@drawable/previous_page_available"
+                            app:layout_constraintEnd_toEndOf="@id/guideline_recycler"
+                            app:layout_constraintTop_toTopOf="parent" />
                 </androidx.constraintlayout.widget.ConstraintLayout>
             </androidx.constraintlayout.widget.ConstraintLayout>
         </androidx.core.widget.NestedScrollView>
