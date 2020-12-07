@@ -48,26 +48,23 @@ class MainActivity : AppCompatActivity() {
 
         mainAct_image_uploadPost_bt.setOnClickListener {
             if (profile.size != 0) {
-                toUploadActivity(profile[0].id)
+                startUploadActivity(profile[0].id)
             } else {
                 Toast.makeText(this, "Profile is not loaded", Toast.LENGTH_SHORT).show()
             }
         }
-    }
-
-    override fun onResume() {
         showProgressBar()
         CoroutineScope(Main).launch {
             queryProfile(getUsername())
         }
-        super.onResume()
     }
 
-    private fun toUploadActivity(profileId: String) {
+    private fun startUploadActivity(profileId: String) {
         val intent = Intent(this, UploadActivity::class.java).apply {
             putExtra(Constants.PROFILE_ID, profileId)
+            putExtra(Constants.ACTIVITY_FROM, Constants.MAIN_ACTIVITY)
         }
-        startActivity(intent)
+        startActivityForResult(intent, Constants.UPLOAD)
     }
 
 
@@ -241,7 +238,30 @@ class MainActivity : AppCompatActivity() {
 
     private fun startProfileActivity() {
         val intent = Intent(this, ProfileActivity::class.java).apply{}
-        startActivity(intent)
+        startActivityForResult(intent, Constants.PROFILE_EMPTY)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if(requestCode == Constants.PROFILE_EMPTY) {
+            val emptyProfile = data?.getBooleanExtra(Constants.PROFILE_EMPTY_BACK_PRESSED, false)
+            if(emptyProfile == true) {
+                CoroutineScope(Main).launch { signOut() }
+            } else {
+                coroutineScope.launch {
+                    queryPost()
+                    setupMenu()
+                }
+            }
+        }
+        if(requestCode == Constants.UPLOAD) {
+            if(data?.getBooleanExtra(Constants.POST_CREATED, false) == true) {
+                coroutineScope.launch {
+                    showProgressBar()
+                    queryPost()
+                }
+            }
+        }
     }
 
     private fun startProfileActivity(profileId: String) {

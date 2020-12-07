@@ -36,27 +36,25 @@ import java.io.File
 
 class PostActivity : AppCompatActivity(), CallbackListener {
     private val context = this
-
-    companion object {
-        private val posts: ArrayList<Post> = ArrayList()
-        private val thisPost: ArrayList<Post> = ArrayList()
-        private var postNumber = 0
-        private var postLoaded = false
-        val coroutineScope = CoroutineScope(Main)
-    }
+    private val posts: ArrayList<Post> = ArrayList()
+    private val thisPost: ArrayList<Post> = ArrayList()
+    private var postNumber = 0
+    private var postLoaded = false
+    private val coroutineScope = CoroutineScope(Main)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_post)
-    }
-
-    override fun onResume() {
-        super.onResume()
-        postNumber = 0
         setupUI()
     }
 
+    override fun onResume() {
+        refreshCommentNumber()
+        super.onResume()
+    }
+
     private fun setupUI() {
+        postNumber = 0
         showProgressbar()
         val profileIdCurrentUser = intent.getStringExtra(Constants.PROFILE_ID_CURRENTUSER)
         val postId = intent.getStringExtra(Constants.POST_ID)
@@ -72,10 +70,16 @@ class PostActivity : AppCompatActivity(), CallbackListener {
         }
     }
 
-    private fun loadUI(profileId: String, postId: String, currentUserName: String, profileIdCurrentUser: String) = runOnUiThread {
+    private fun loadUI(
+        profileId: String,
+        postId: String,
+        currentUserName: String,
+        profileIdCurrentUser: String
+    ) = runOnUiThread {
         val post = thisPost[0]
         val date = post.date
-        val image = "$postId.jpg"
+        val imageNumber = post.image
+        val image = "$postId-$imageNumber.jpg"
         val name = post.profile.nickname
         val username = post.profile.username
         val title = post.title
@@ -96,8 +100,7 @@ class PostActivity : AppCompatActivity(), CallbackListener {
         postAct_text_date.text = date
         postAct_text_name.text = name
         postAct_text_content.text = content
-        val commentSize = "$comments comments"
-        postAct_text_comments_number.text = commentSize
+        postAct_text_comments_number.text = comments.toString()
 
         val recyclerTitle = "Other posts from $name"
         postAct_text_recycler_title.text = recyclerTitle
@@ -136,34 +139,39 @@ class PostActivity : AppCompatActivity(), CallbackListener {
         val file = File(imagePath)
         if (file.exists()) {
             Glide.with(context)
-                    .load(file)
-                    .listener(object : RequestListener<Drawable> {
-                        override fun onLoadFailed(
-                                e: GlideException?,
-                                model: Any?,
-                                target: Target<Drawable>?,
-                                isFirstResource: Boolean
-                        ): Boolean {
-                            postAct_image_post_image.visibility = View.VISIBLE
-                            return false
-                        }
+                .load(file)
+                .listener(object : RequestListener<Drawable> {
+                    override fun onLoadFailed(
+                        e: GlideException?,
+                        model: Any?,
+                        target: Target<Drawable>?,
+                        isFirstResource: Boolean
+                    ): Boolean {
+                        postAct_image_post_image.visibility = View.VISIBLE
+                        return false
+                    }
 
-                        override fun onResourceReady(
-                                resource: Drawable?,
-                                model: Any?,
-                                target: Target<Drawable>?,
-                                dataSource: DataSource?,
-                                isFirstResource: Boolean
-                        ): Boolean {
-                            postAct_image_post_image.visibility = View.VISIBLE
-                            return false
-                        }
-                    })
-                    .into(postAct_image_post_image)
+                    override fun onResourceReady(
+                        resource: Drawable?,
+                        model: Any?,
+                        target: Target<Drawable>?,
+                        dataSource: DataSource?,
+                        isFirstResource: Boolean
+                    ): Boolean {
+                        postAct_image_post_image.visibility = View.VISIBLE
+                        return false
+                    }
+                })
+                .into(postAct_image_post_image)
         }
     }
 
-    private fun setupMenu(postUsername: String, profileId: String, currentUserName: String, postId: String) {
+    private fun setupMenu(
+        postUsername: String,
+        profileId: String,
+        currentUserName: String,
+        postId: String
+    ) {
         if (postUsername == currentUserName) {
             postAct_image_menu_bt.setOnClickListener {
                 val popupMenu = PopupMenu(this@PostActivity, postAct_image_menu_bt)
@@ -173,8 +181,9 @@ class PostActivity : AppCompatActivity(), CallbackListener {
                         val intent = Intent(context, UploadActivity::class.java).apply {
                             putExtra(Constants.PROFILE_ID, profileId)
                             putExtra(Constants.POST_ID, postId)
+                            putExtra(Constants.ACTIVITY_FROM, Constants.POST_ACTIVITY)
                         }
-                        startActivity(intent)
+                        startActivityForResult(intent, Constants.REQUEST_EDIT)
                     }
                     if (it.itemId == R.id.action_delete) {
                         if (postLoaded) {
@@ -193,6 +202,15 @@ class PostActivity : AppCompatActivity(), CallbackListener {
             }
         } else {
             postAct_image_menu_bt.visibility = View.GONE
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == Constants.REQUEST_EDIT) {
+            if (data?.getBooleanExtra(Constants.POST_EDITED, false) == true) {
+                setupUI()
+            }
         }
     }
 
@@ -220,19 +238,20 @@ class PostActivity : AppCompatActivity(), CallbackListener {
     }
 
     private suspend fun loadProfileImage(filePath: String, imageView: ImageView, context: Context) =
-            withContext(Main) {
-                val file = File(filePath)
-                if (file.exists()) {
-                    CoroutineScope(Main).launch {
-                        Glide.with(context)
-                                .load(file)
-                                .into(imageView)
-                    }
+        withContext(Main) {
+            val file = File(filePath)
+            if (file.exists()) {
+                CoroutineScope(Main).launch {
+                    Glide.with(context)
+                        .load(file)
+                        .into(imageView)
                 }
             }
+        }
 
-    private suspend fun queryPost(profileId: String, postId: String, profileIdCurrentUser: String) = withContext(IO) {
-        Amplify.API.query(
+    private suspend fun queryPost(profileId: String, postId: String, profileIdCurrentUser: String) =
+        withContext(IO) {
+            Amplify.API.query(
                 ModelQuery.get(Profile::class.java, profileId),
                 { response ->
                     posts.clear()
@@ -252,7 +271,8 @@ class PostActivity : AppCompatActivity(), CallbackListener {
                         withContext(Main) {
                             val fivePosts = getFivePosts(posts)
                             runOnUiThread {
-                                postAct_rc_posts.adapter = PostAdapter(fivePosts, context, profileIdCurrentUser)
+                                postAct_rc_posts.adapter =
+                                    PostAdapter(fivePosts, context, profileIdCurrentUser)
                                 postAct_rc_posts.viewTreeObserver.addOnGlobalLayoutListener {
                                     callback()
                                 }
@@ -264,54 +284,60 @@ class PostActivity : AppCompatActivity(), CallbackListener {
                 { error ->
                     Log.e("MyAmplifyApp", "Query failure", error)
                 }
-        )
-    }
+            )
+        }
 
-    private suspend fun queryPostById(postId: String, postItem: ArrayList<Post>, currentUserName: String, profileIdCurrentUser: String) =
-            withContext(IO) {
-                Amplify.API.query(
-                        ModelQuery.get(Post::class.java, postId),
-                        { response ->
-                            postItem.clear()
-                            val post = response.data
-                            postItem.add(post)
-                            postLoaded = true
-                            val profileId = post.profile.id
-                            loadUI(profileId, postId, currentUserName, profileIdCurrentUser)
-                        },
-                        { error ->
-                            Log.e("MyAmplifyApp", "Query failure", error)
-                        }
-                )
-            }
+    private suspend fun queryPostById(
+        postId: String,
+        postItem: ArrayList<Post>,
+        currentUserName: String,
+        profileIdCurrentUser: String
+    ) =
+        withContext(IO) {
+            Amplify.API.query(
+                ModelQuery.get(Post::class.java, postId),
+                { response ->
+                    postItem.clear()
+                    val post = response.data
+                    postItem.add(post)
+                    postLoaded = true
+                    val profileId = post.profile.id
+                    loadUI(profileId, postId, currentUserName, profileIdCurrentUser)
+                },
+                { error ->
+                    Log.e("MyAmplifyApp", "Query failure", error)
+                }
+            )
+        }
 
     private suspend fun deletePostFromAWS(postItem: Post) = withContext(IO) {
-        if(postItem.comments.size != 0) {
-            for(commentItem in postItem.comments) {
+        if (postItem.comments.size != 0) {
+            for (commentItem in postItem.comments) {
                 Amplify.API.mutate(
-                        ModelMutation.delete(commentItem),{}, {}
+                    ModelMutation.delete(commentItem), {}, {}
                 )
             }
         }
         Amplify.API.mutate(
-                ModelMutation.delete(postItem),
-                { result ->
-                    Log.i("MyAmplifyApp", "postItem deleted ")
-                    val id = result.data.id
-                    if(result.data.hasImage) {
-                        deleteImageFromS3("$id.jpg")
-                    }
-                    finish()
-                },
-                { error -> Log.e("MyAmplifyApp", "Create failed", error) }
+            ModelMutation.delete(postItem),
+            { result ->
+                Log.i("MyAmplifyApp", "postItem deleted ")
+                val id = result.data.id
+                val imageNumber = result.data.image
+                if (result.data.hasImage) {
+                    deleteImageFromS3("$id-$imageNumber.jpg")
+                }
+                finish()
+            },
+            { error -> Log.e("MyAmplifyApp", "Create failed", error) }
         )
     }
 
     private fun deleteImageFromS3(fileName: String) {
         Amplify.Storage.remove(
-                fileName,
-                { result -> Log.i("MyAmplifyApp", "Successfully removed: " + result.getKey()) },
-                { error -> Log.e("MyAmplifyApp", "Remove failure", error) }
+            fileName,
+            { result -> Log.i("MyAmplifyApp", "Successfully removed: " + result.getKey()) },
+            { error -> Log.e("MyAmplifyApp", "Remove failure", error) }
         )
     }
 
@@ -328,6 +354,22 @@ class PostActivity : AppCompatActivity(), CallbackListener {
         return fivePosts
     }
 
+    private fun refreshCommentNumber() {
+        if (thisPost.size != 0) {
+            Amplify.API.query(
+                ModelQuery.get(Post::class.java, thisPost[0].id),
+                { response ->
+                    runOnUiThread {
+                        postAct_text_comments_number.text = response.data.comments.size.toString()
+                    }
+                },
+                { error ->
+                    Log.e("MyAmplifyApp", "Query failure", error)
+                }
+            )
+        }
+    }
+
     private fun pageHelper(id: String?, posts: ArrayList<Post>, profileIdCurrentUser: String) {
         if (postNumber - 5 <= 0) {
             postAct_image_previous_page.visibility = View.INVISIBLE
@@ -336,36 +378,37 @@ class PostActivity : AppCompatActivity(), CallbackListener {
             postAct_image_previous_page.visibility = View.VISIBLE
             postAct_image_previous_page.isClickable = true
             Glide.with(context)
-                    .load(R.drawable.previous_page_available)
-                    .listener(object : RequestListener<Drawable> {
-                        override fun onLoadFailed(
-                                e: GlideException?,
-                                model: Any?,
-                                target: Target<Drawable>?,
-                                isFirstResource: Boolean
-                        ): Boolean {
-                            return false
-                        }
+                .load(R.drawable.previous_page_available)
+                .listener(object : RequestListener<Drawable> {
+                    override fun onLoadFailed(
+                        e: GlideException?,
+                        model: Any?,
+                        target: Target<Drawable>?,
+                        isFirstResource: Boolean
+                    ): Boolean {
+                        return false
+                    }
 
-                        override fun onResourceReady(
-                                resource: Drawable?,
-                                model: Any?,
-                                target: Target<Drawable>?,
-                                dataSource: DataSource?,
-                                isFirstResource: Boolean
-                        ): Boolean {
-                            postAct_image_previous_page.setOnClickListener {
-                                if (id != null) {
-                                    postNumber -= 10
-                                    val fivePosts = getFivePosts(posts)
-                                    postAct_rc_posts.adapter = PostAdapter(fivePosts, context, profileIdCurrentUser)
-                                    pageHelper(id, posts, profileIdCurrentUser)
-                                }
+                    override fun onResourceReady(
+                        resource: Drawable?,
+                        model: Any?,
+                        target: Target<Drawable>?,
+                        dataSource: DataSource?,
+                        isFirstResource: Boolean
+                    ): Boolean {
+                        postAct_image_previous_page.setOnClickListener {
+                            if (id != null) {
+                                postNumber -= 10
+                                val fivePosts = getFivePosts(posts)
+                                postAct_rc_posts.adapter =
+                                    PostAdapter(fivePosts, context, profileIdCurrentUser)
+                                pageHelper(id, posts, profileIdCurrentUser)
                             }
-                            return false
                         }
-                    })
-                    .into(postAct_image_previous_page)
+                        return false
+                    }
+                })
+                .into(postAct_image_previous_page)
         }
         if (postNumber >= posts.size) {
             postAct_image_next_page.isClickable = false
@@ -374,35 +417,36 @@ class PostActivity : AppCompatActivity(), CallbackListener {
             postAct_image_next_page.isClickable = true
             postAct_image_next_page.visibility = View.VISIBLE
             Glide.with(context)
-                    .load(R.drawable.next_page_available_24)
-                    .listener(object : RequestListener<Drawable> {
-                        override fun onLoadFailed(
-                                e: GlideException?,
-                                model: Any?,
-                                target: Target<Drawable>?,
-                                isFirstResource: Boolean
-                        ): Boolean {
-                            return false
-                        }
+                .load(R.drawable.next_page_available_24)
+                .listener(object : RequestListener<Drawable> {
+                    override fun onLoadFailed(
+                        e: GlideException?,
+                        model: Any?,
+                        target: Target<Drawable>?,
+                        isFirstResource: Boolean
+                    ): Boolean {
+                        return false
+                    }
 
-                        override fun onResourceReady(
-                                resource: Drawable?,
-                                model: Any?,
-                                target: Target<Drawable>?,
-                                dataSource: DataSource?,
-                                isFirstResource: Boolean
-                        ): Boolean {
-                            postAct_image_next_page.setOnClickListener {
-                                if (id != null) {
-                                    val fivePosts = getFivePosts(posts)
-                                    postAct_rc_posts.adapter = PostAdapter(fivePosts, context, profileIdCurrentUser)
-                                    pageHelper(id, posts, profileIdCurrentUser)
-                                }
+                    override fun onResourceReady(
+                        resource: Drawable?,
+                        model: Any?,
+                        target: Target<Drawable>?,
+                        dataSource: DataSource?,
+                        isFirstResource: Boolean
+                    ): Boolean {
+                        postAct_image_next_page.setOnClickListener {
+                            if (id != null) {
+                                val fivePosts = getFivePosts(posts)
+                                postAct_rc_posts.adapter =
+                                    PostAdapter(fivePosts, context, profileIdCurrentUser)
+                                pageHelper(id, posts, profileIdCurrentUser)
                             }
-                            return false
                         }
-                    })
-                    .into(postAct_image_next_page)
+                        return false
+                    }
+                })
+                .into(postAct_image_next_page)
         }
     }
 
@@ -414,11 +458,6 @@ class PostActivity : AppCompatActivity(), CallbackListener {
     private fun hideProgressbar() = runOnUiThread {
         postAct_progressbar.visibility = View.GONE
         postAct_layout_all.visibility = View.VISIBLE
-    }
-
-    override fun onBackPressed() {
-        super.onBackPressed()
-        finish()
     }
 
     override fun callback() {

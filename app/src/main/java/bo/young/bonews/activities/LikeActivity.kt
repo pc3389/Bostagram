@@ -1,14 +1,9 @@
 package bo.young.bonews.activities
 
-import android.app.Activity
-import android.graphics.Rect
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
-import android.view.MotionEvent
 import android.view.View
-import android.view.inputmethod.InputMethodManager
-import android.widget.EditText
 import androidx.recyclerview.widget.LinearLayoutManager
 import bo.young.bonews.R
 import bo.young.bonews.adapters.LikeAdapter

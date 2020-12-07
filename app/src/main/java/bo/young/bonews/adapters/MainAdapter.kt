@@ -41,7 +41,7 @@ class MainAdapters(private val items: ArrayList<Post>, val context: Context, val
         val dateTextView: TextView = view.item_main_text_date
         val titleTextView: TextView = view.item_main_text_title
         val contentTextView: TextView = view.item_main_text_content
-        val commentsTextView: TextView = view.item_main_text_comments
+        val commentsTextView: TextView = view.item_main_text_comments_number
         val imageImageView: ImageView = view.item_main_image_postImage
         val progressbar: ProgressBar = view.item_main_progressbar
         val itemLayout: ConstraintLayout = view.item_main_layout_all
@@ -77,7 +77,7 @@ class MainAdapters(private val items: ArrayList<Post>, val context: Context, val
                 val content = items[position].contents
                 holder.contentTextView.text = content
                 val comments = items[position].comments.size
-                val numberOfComments = "$comments Comments"
+                val numberOfComments = "$comments"
                 holder.commentsTextView.text = numberOfComments
 
                 val profileImageList = if (items[position].profile.profileImage == null) {
@@ -94,7 +94,8 @@ class MainAdapters(private val items: ArrayList<Post>, val context: Context, val
                     loadProfileImage(profileImagePath, profileImageKey, holder, items[position].profile.hasImage)
                 }
                 val postId = items[position].id
-                val image = "$postId.jpg"
+                val imageNumber = items[position].image
+                val image = "$postId-$imageNumber.jpg"
                 val filepath = context.cacheDir.toString() + "/$image"
                 if (items[position].hasImage) {
                     loadImageFromS3(filepath, image, holder, items[position].hasImage)
@@ -166,7 +167,7 @@ class MainAdapters(private val items: ArrayList<Post>, val context: Context, val
                         }
 
                     } else {
-                        val glideWork = CoroutineScope(Main).launch {
+                        CoroutineScope(Main).launch {
                             Glide.with(context)
                                     .load(file)
                                     .listener(object : RequestListener<Drawable> {

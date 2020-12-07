@@ -35,7 +35,7 @@ public final class Post implements Model {
   private final @ModelField(targetType="PostStatus", isRequired = true) PostStatus status;
   private final @ModelField(targetType="String", isRequired = true) String date;
   private final @ModelField(targetType="String") String contents;
-  private final @ModelField(targetType="String") String image;
+  private final @ModelField(targetType="Int") Integer image;
   private final @ModelField(targetType="Boolean") Boolean hasImage;
   private final @ModelField(targetType="Profile") @BelongsTo(targetName = "profileID", type = Profile.class) Profile profile;
   private final @ModelField(targetType="Like") @HasMany(associatedWith = "post", type = Like.class) List<Like> likes = null;
@@ -60,7 +60,7 @@ public final class Post implements Model {
       return contents;
   }
   
-  public String getImage() {
+  public Integer getImage() {
       return image;
   }
   
@@ -80,7 +80,7 @@ public final class Post implements Model {
       return comments;
   }
   
-  private Post(String id, String title, PostStatus status, String date, String contents, String image, Boolean hasImage, Profile profile) {
+  private Post(String id, String title, PostStatus status, String date, String contents, Integer image, Boolean hasImage, Profile profile) {
     this.id = id;
     this.title = title;
     this.status = status;
@@ -205,7 +205,7 @@ public final class Post implements Model {
     Post build();
     BuildStep id(String id) throws IllegalArgumentException;
     BuildStep contents(String contents);
-    BuildStep image(String image);
+    BuildStep image(Integer image);
     BuildStep hasImage(Boolean hasImage);
     BuildStep profile(Profile profile);
   }
@@ -217,7 +217,7 @@ public final class Post implements Model {
     private PostStatus status;
     private String date;
     private String contents;
-    private String image;
+    private Integer image;
     private Boolean hasImage;
     private Profile profile;
     @Override
@@ -263,7 +263,7 @@ public final class Post implements Model {
     }
     
     @Override
-     public BuildStep image(String image) {
+     public BuildStep image(Integer image) {
         this.image = image;
         return this;
     }
@@ -303,7 +303,7 @@ public final class Post implements Model {
   
 
   public final class CopyOfBuilder extends Builder {
-    private CopyOfBuilder(String id, String title, PostStatus status, String date, String contents, String image, Boolean hasImage, Profile profile) {
+    private CopyOfBuilder(String id, String title, PostStatus status, String date, String contents, Integer image, Boolean hasImage, Profile profile) {
       super.id(id);
       super.title(title)
         .status(status)
@@ -335,7 +335,7 @@ public final class Post implements Model {
     }
     
     @Override
-     public CopyOfBuilder image(String image) {
+     public CopyOfBuilder image(Integer image) {
       return (CopyOfBuilder) super.image(image);
     }
     

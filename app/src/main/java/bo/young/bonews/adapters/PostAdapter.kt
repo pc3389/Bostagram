@@ -52,7 +52,8 @@ class PostAdapter(private val items: ArrayList<Post>, val context: Context, priv
             holder.commentsTextView.text = numberOfComments
 
             val postId = items[position].id
-            val image = "$postId.jpg"
+            val imageNumber = items[position].image
+            val image = "$postId-$imageNumber.jpg"
             val filepath = context.cacheDir.toString() + "/$image"
             loadImageFromS3(filepath, holder, position)
             holder.itemView.setOnClickListener {

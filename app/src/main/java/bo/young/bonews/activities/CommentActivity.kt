@@ -1,7 +1,6 @@
 package bo.young.bonews.activities
 
 import android.app.Activity
-import android.content.Context
 import android.graphics.Rect
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -14,7 +13,6 @@ import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import bo.young.bonews.R
 import bo.young.bonews.adapters.CommentAdapter
-import bo.young.bonews.adapters.PostAdapter
 import bo.young.bonews.interfaces.CallbackListener
 import bo.young.bonews.utilities.Constants
 import com.amplifyframework.api.graphql.model.ModelMutation
@@ -22,17 +20,13 @@ import com.amplifyframework.api.graphql.model.ModelQuery
 import com.amplifyframework.core.Amplify
 import com.amplifyframework.datastore.generated.model.Comment
 import com.amplifyframework.datastore.generated.model.Post
-import com.amplifyframework.datastore.generated.model.PostStatus
 import com.amplifyframework.datastore.generated.model.Profile
 import kotlinx.android.synthetic.main.activity_comment.*
-import kotlinx.android.synthetic.main.activity_post.*
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
@@ -66,7 +60,7 @@ class CommentActivity : AppCompatActivity(), CallbackListener {
 
         }
 
-        commentAct_image_send.setOnClickListener {
+        commentAct_image_send_bt.setOnClickListener {
             coroutineScope.launch {
                 if (profileIdCurrentUser != null) {
                     val content = commentAct_edit_comment.text.toString()
@@ -75,6 +69,7 @@ class CommentActivity : AppCompatActivity(), CallbackListener {
                         Toast.makeText(context, "Comment cannot be empty", Toast.LENGTH_SHORT).show()
                     } else {
                         uploadComment(profileIdCurrentUser, date, content, currentPost!!)
+                        commentAct_edit_comment.setText("")
                         commentAct_rc_posts.scrollToPosition(0)
                         hideKeyboard()
                     }
@@ -200,12 +195,7 @@ class CommentActivity : AppCompatActivity(), CallbackListener {
         val sdf = SimpleDateFormat("yyyy. MM. dd. HH:mm:ss")
         return sdf.format(Date())
     }
-
-    override fun onBackPressed() {
-        finish()
-        super.onBackPressed()
-    }
-
+    
     private fun hideKeyboard() {
         val inputMethodManager = getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
         inputMethodManager.hideSoftInputFromWindow(currentFocus?.windowToken, 0)

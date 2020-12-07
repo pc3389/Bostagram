@@ -274,7 +274,8 @@
                         android:layout_width="match_parent"
                         android:layout_height="0dp"
                         android:nestedScrollingEnabled="false"
-                        app:layout_constraintTop_toBottomOf="@id/grey_line" />
+                        app:layout_constraintTop_toBottomOf="@id/grey_line"
+                        android:descendantFocusability="blocksDescendants"/>
 
 
                 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -99,25 +99,74 @@
             app:layout_constraintTop_toBottomOf="@+id/item_main_image_postImage"
             tools:text="Contents" />
 
-        <TextView
-            android:id="@+id/item_main_text_comments"
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/item_main_layout_comment_and_like"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginHorizontal="@dimen/layoutPadding"
-            android:layout_marginVertical="10dp"
-            android:textColor="?attr/colorOnBackground"
-            android:textSize="@dimen/small_text_size"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/item_main_text_content"
-            tools:text="Comments" />
+            app:layout_constraintTop_toBottomOf="@+id/item_main_text_content">
+
+            <ImageView
+                android:id="@+id/item_main_image_like_bt"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/layoutPadding"
+                android:padding="7dp"
+                android:src="@drawable/ic_thumb_up_not_selected24"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/item_main_text_likes_number"
+                android:layout_width="wrap_content"
+                android:layout_height="0dp"
+                android:gravity="center_vertical"
+                android:paddingEnd="20dp"
+                android:textColor="?attr/colorOnBackground"
+                android:textSize="@dimen/small_text_size"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintStart_toEndOf="@id/item_main_image_like_bt"
+                app:layout_constraintTop_toTopOf="@id/item_main_image_like_bt"
+                tools:text="2" />
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/item_main_layout_comment"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_constraintStart_toEndOf="@id/item_main_text_likes_number"
+                app:layout_constraintTop_toTopOf="@id/item_main_text_likes_number">
+
+                <ImageView
+                    android:id="@+id/item_main_image_comment_bt"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:padding="7dp"
+                    android:src="@drawable/ic_comment_24"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:id="@+id/item_main_text_comments_number"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingEnd="10dp"
+                    android:textColor="?attr/colorOnBackground"
+                    android:textSize="@dimen/small_text_size"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toEndOf="@id/item_main_image_comment_bt"
+                    app:layout_constraintTop_toTopOf="parent"
+                    tools:text="2" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
         <View
             android:layout_width="match_parent"
             android:layout_height="5dp"
-            android:layout_marginTop="10dp"
             android:background="@color/grey"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/item_main_text_comments" />
+            app:layout_constraintTop_toBottomOf="@id/item_main_layout_comment_and_like" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

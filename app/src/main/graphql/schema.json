@@ -1666,7 +1666,7 @@
                         "description": null,
                         "type": {
                             "kind": "INPUT_OBJECT",
-                            "name": "ModelStringInput",
+                            "name": "ModelIntInput",
                             "ofType": null
                         },
                         "defaultValue": null
@@ -1971,7 +1971,7 @@
                         "args": [],
                         "type": {
                             "kind": "SCALAR",
-                            "name": "String",
+                            "name": "Int",
                             "ofType": null
                         },
                         "isDeprecated": false,
@@ -4431,7 +4431,7 @@
                         "description": null,
                         "type": {
                             "kind": "SCALAR",
-                            "name": "String",
+                            "name": "Int",
                             "ofType": null
                         },
                         "defaultValue": null
@@ -4512,7 +4512,7 @@
                         "description": null,
                         "type": {
                             "kind": "INPUT_OBJECT",
-                            "name": "ModelStringInput",
+                            "name": "ModelIntInput",
                             "ofType": null
                         },
                         "defaultValue": null
@@ -4645,7 +4645,7 @@
                         "description": null,
                         "type": {
                             "kind": "SCALAR",
-                            "name": "String",
+                            "name": "Int",
                             "ofType": null
                         },
                         "defaultValue": null

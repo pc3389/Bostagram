@@ -95,12 +95,12 @@
                 android:hint="Leave your Comment"
                 android:paddingHorizontal="20dp"
                 android:paddingVertical="10dp"
-                app:layout_constraintEnd_toStartOf="@id/commentAct_image_send"
+                app:layout_constraintEnd_toStartOf="@id/commentAct_image_send_bt"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
             <ImageView
-                android:id="@+id/commentAct_image_send"
+                android:id="@+id/commentAct_image_send_bt"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:padding="10dp"

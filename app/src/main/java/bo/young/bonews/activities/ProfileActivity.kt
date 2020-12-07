@@ -2,7 +2,6 @@ package bo.young.bonews.activities
 
 import android.Manifest
 import android.app.Activity
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Rect
@@ -13,6 +12,8 @@ import android.os.Bundle
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View
+import android.view.ViewGroup.FOCUS_AFTER_DESCENDANTS
+import android.view.ViewGroup.FOCUS_BLOCK_DESCENDANTS
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import android.widget.PopupMenu
@@ -27,8 +28,8 @@ import com.amplifyframework.api.graphql.model.ModelMutation
 import com.amplifyframework.api.graphql.model.ModelQuery
 import com.amplifyframework.auth.AuthUserAttributeKey
 import com.amplifyframework.core.Amplify
-import com.amplifyframework.datastore.generated.model.Comment
 import com.amplifyframework.datastore.generated.model.Post
+import com.amplifyframework.datastore.generated.model.PostStatus
 import com.amplifyframework.datastore.generated.model.Profile
 import com.amplifyframework.datastore.generated.model.ProfileImage
 import com.amplifyframework.storage.StorageException
@@ -55,6 +56,7 @@ import kotlin.collections.ArrayList
 class ProfileActivity : AppCompatActivity() {
     private val context = this
 
+    private var tempFile: File? = null
     private var file: File? = null
     private val profiles = ArrayList<Profile>()
     private val posts: ArrayList<Post> = ArrayList()
@@ -62,6 +64,7 @@ class ProfileActivity : AppCompatActivity() {
     private var hasProfile = false
     private var hasImage = false
     private var imageChanged = false
+    private var isLoading = false
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -76,11 +79,12 @@ class ProfileActivity : AppCompatActivity() {
                 queryProfile(profileId, currentUserProfileId)
             } else {
                 Toast.makeText(context, "Please create your profile", Toast.LENGTH_SHORT)
-                        .show()
+                    .show()
                 showEditProfile()
                 val username = getUsername()
                 profAct_text_username.text = username
                 getEmail()
+                hideProgressBar()
             }
         }
 
@@ -89,7 +93,7 @@ class ProfileActivity : AppCompatActivity() {
         }
 
         profAct_image_cancel_bt.setOnClickListener {
-            showCancelDialog()
+            onBackPressed()
         }
 
         profAct_image_back_bt.setOnClickListener {
@@ -98,6 +102,7 @@ class ProfileActivity : AppCompatActivity() {
 
         profAct_image_save_bt.setOnClickListener {
             CoroutineScope(Main).launch {
+                tempFile = file
                 postNumber = 0
                 hideKeyboard()
                 hideEditProfile()
@@ -107,11 +112,14 @@ class ProfileActivity : AppCompatActivity() {
                 } else {
                     profAct_edit_name.text.toString()
                 }
-                val number = if (profiles[0].profileImage.isEmpty()) {
+                val number = if (profiles.isEmpty()) {
+                    1
+                } else if (profiles[0].profileImage.isEmpty()) {
                     1
                 } else {
                     profiles[0].profileImage.first().number + 1
                 }
+
                 val imageKey = if (file != null) {
                     getImageKey(username, number)
                 } else null
@@ -147,22 +155,23 @@ class ProfileActivity : AppCompatActivity() {
 
     private suspend fun getEmail() = withContext(IO) {
         Amplify.Auth.fetchUserAttributes(
-                {
-                    Log.i("AuthDemo", "User attributes = $it")
-                    for (attribute in it) {
-                        if (attribute.key == AuthUserAttributeKey.email()) {
-                            runOnUiThread { profAct_text_email.text = attribute.value }
-                        }
+            {
+                Log.i("AuthDemo", "User attributes = $it")
+                for (attribute in it) {
+                    if (attribute.key == AuthUserAttributeKey.email()) {
+                        runOnUiThread { profAct_text_email.text = attribute.value }
                     }
+                }
 
 
-                },
-                { Log.e("AuthDemo", "Failed to fetch user attributes. $it") }
+            },
+            { Log.e("AuthDemo", "Failed to fetch user attributes. $it") }
         )
     }
 
-    private suspend fun queryProfile(profileId: String, currentUserProfileId: String) = withContext(IO) {
-        Amplify.API.query(
+    private suspend fun queryProfile(profileId: String, currentUserProfileId: String) =
+        withContext(IO) {
+            Amplify.API.query(
                 ModelQuery.get(Profile::class.java, profileId),
                 { response ->
                     profiles.clear()
@@ -188,8 +197,8 @@ class ProfileActivity : AppCompatActivity() {
                     }
                 },
                 { error -> Log.e("MyAmplifyApp", "Query failure", error) }
-        )
-    }
+            )
+        }
 
     private suspend fun updateUI(profile: Profile) = withContext(Main) {
         profAct_text_name.text = profile.nickname
@@ -206,58 +215,76 @@ class ProfileActivity : AppCompatActivity() {
     }
 
 
-    private suspend fun createProfile(file: File?, username: String, name: String, email: String, imageKey: String?, hasImage: Boolean, imageNumber: Int) =
-            withContext(IO) {
-                if (imageKey != null && hasImage && imageChanged) {
-                    val date = getTodayDate()
-                    createProfileImage(date, imageNumber, imageKey)
-                    imageToS3(file, username, name, email, imageKey, hasImage, false)
-                }
-
-                val profile = Profile.builder()
-                        .username(username)
-                        .nickname(name)
-                        .emailAddress(email)
-                        .hasImage(hasImage)
-                        .build()
-
-                Amplify.API.mutate(
-                        ModelMutation.create(profile),
-                        { response ->
-                            CoroutineScope(Main).launch {
-                                profAct_text_name.text = name
-                                hideProgressBar()
-                            }
-                            Log.i(
-                                    "MyAmplifyApp",
-                                    "Profile with name: " + response.data.nickname
-                            )
-                        },
-                        { error ->
-                            Log.e("MyAmplifyApp", "Create failed", error)
-                            hideProgressBar()
-                        }
-                )
+    private suspend fun createProfile(
+        file: File?,
+        username: String,
+        name: String,
+        email: String,
+        imageKey: String?,
+        hasImage: Boolean,
+        imageNumber: Int
+    ) =
+        withContext(IO) {
+            if (imageKey != null && hasImage && imageChanged) {
+                val date = getTodayDate()
+                createProfileImage(date, imageNumber, imageKey)
+                imageToS3(file, username, name, email, imageKey, hasImage, false)
             }
 
-    private suspend fun createProfileImage(date: String, profileNumber: Int, imageKey: String) = withContext(IO) {
-        val profileImage = ProfileImage.builder()
+            val profile = Profile.builder()
+                .username(username)
+                .nickname(name)
+                .emailAddress(email)
+                .hasImage(hasImage)
+                .build()
+
+            Amplify.API.mutate(
+                ModelMutation.create(profile),
+                { response ->
+                    CoroutineScope(Main).launch {
+                        profAct_text_name.text = name
+                        hideProgressBar()
+                        hasProfile = true
+                    }
+                    Log.i(
+                        "MyAmplifyApp",
+                        "Profile with name: " + response.data.nickname
+                    )
+                },
+                { error ->
+                    Log.e("MyAmplifyApp", "Create failed", error)
+                    hideProgressBar()
+                }
+            )
+        }
+
+    private suspend fun createProfileImage(date: String, profileNumber: Int, imageKey: String) =
+        withContext(IO) {
+            val profileImage = ProfileImage.builder()
                 .date(date)
                 .number(profileNumber)
                 .profileImageKey(imageKey)
                 .profile(profiles[0])
                 .build()
 
-        Amplify.API.mutate(
+            Amplify.API.mutate(
                 ModelMutation.create(profileImage),
                 { response ->
                     Log.i("MyAmplifyApp", "ProfileImage added: " + response.data.profileImageKey)
                 },
                 { error -> Log.e("MyAmplifyApp", "Create failed", error) }
-        )
-    }
+            )
+        }
 
-    private suspend fun updateProfile(file: File?, username: String, name: String, email: String, imageKey: String?, hasImage: Boolean, imageNumber: Int) = withContext(IO) {
+    private suspend fun updateProfile(
+        file: File?,
+        username: String,
+        name: String,
+        email: String,
+        imageKey: String?,
+        hasImage: Boolean,
+        imageNumber: Int
+    ) = withContext(IO) {
         if (imageKey != null && hasImage && imageChanged) {
             val date = getTodayDate()
             createProfileImage(date, imageNumber, imageKey)
@@ -267,15 +294,16 @@ class ProfileActivity : AppCompatActivity() {
         }
     }
 
-    private suspend fun upload(username: String, name: String, email: String, hasImage: Boolean) = withContext(IO) {
-        val profile = profiles[0].copyOfBuilder()
+    private suspend fun upload(username: String, name: String, email: String, hasImage: Boolean) =
+        withContext(IO) {
+            val profile = profiles[0].copyOfBuilder()
                 .username(username)
                 .nickname(name)
                 .emailAddress(email)
                 .hasImage(hasImage)
                 .build()
 
-        Amplify.API.mutate(
+            Amplify.API.mutate(
                 ModelMutation.update(profile),
                 { response ->
                     CoroutineScope(Main).launch {
@@ -288,8 +316,8 @@ class ProfileActivity : AppCompatActivity() {
                     Log.e("MyAmplifyApp", "Create failed", error)
                     hideProgressBar()
                 }
-        )
-    }
+            )
+        }
 
 
     private suspend fun getUsername(): String = withContext(IO) {
@@ -304,7 +332,15 @@ class ProfileActivity : AppCompatActivity() {
         return@withContext builder.toString()
     }
 
-    private suspend fun imageToS3(file: File?, username: String, name: String, email: String, imageKey: String, hasImage: Boolean, isUpload: Boolean) {
+    private suspend fun imageToS3(
+        file: File?,
+        username: String,
+        name: String,
+        email: String,
+        imageKey: String,
+        hasImage: Boolean,
+        isUpload: Boolean
+    ) {
         if (file != null) {
             withContext(Main) {
                 val photoInCache = File("$cacheDir/$imageKey")
@@ -314,18 +350,18 @@ class ProfileActivity : AppCompatActivity() {
             }
             withContext(IO) {
                 Amplify.Storage.uploadFile(
-                        imageKey,
-                        file,
-                        StorageUploadFileOptions.defaultInstance(),
-                        { result2: StorageUploadFileResult ->
-                            Log.i("MyAmplifyApp", "Successfully uploaded: " + result2.key)
-                            if (isUpload) {
-                                CoroutineScope(Main).launch { upload(username, name, email, hasImage) }
-                            }
-                        },
-                        { error: StorageException? ->
-                            Log.e("MyAmplifyApp", "Upload failed", error)
+                    imageKey,
+                    file,
+                    StorageUploadFileOptions.defaultInstance(),
+                    { result2: StorageUploadFileResult ->
+                        Log.i("MyAmplifyApp", "Successfully uploaded: " + result2.key)
+                        if (isUpload) {
+                            CoroutineScope(Main).launch { upload(username, name, email, hasImage) }
                         }
+                    },
+                    { error: StorageException? ->
+                        Log.e("MyAmplifyApp", "Upload failed", error)
+                    }
                 )
             }
         }
@@ -335,66 +371,68 @@ class ProfileActivity : AppCompatActivity() {
     private suspend fun loadProfileImage(file: File, image: String) = withContext(IO) {
         if (!file.exists()) {
             Amplify.Storage.downloadFile(
-                    image,
-                    file,
-                    { result: StorageDownloadFileResult ->
-                        Glide.with(context)
-                                .load(result.file)
-                                .listener(object : RequestListener<Drawable> {
-                                    override fun onLoadFailed(
-                                            e: GlideException?,
-                                            model: Any?,
-                                            target: Target<Drawable>?,
-                                            isFirstResource: Boolean
-                                    ): Boolean {
-                                        return false
-                                    }
-
-                                    override fun onResourceReady(
-                                            resource: Drawable?,
-                                            model: Any?,
-                                            target: Target<Drawable>?,
-                                            dataSource: DataSource?,
-                                            isFirstResource: Boolean
-                                    ): Boolean {
-                                        return false
-                                    }
-                                })
-                                .into(profAct_image_profile_image)
-                    },
-                    { error: StorageException? ->
-                        Log.e(
-                                "MyAmplifyApp",
-                                "Download Failure",
-                                error
-                        )
-                    }
-            )
-        } else {
-            CoroutineScope(Main).launch {
-                Glide.with(context)
-                        .load(file)
+                image,
+                file,
+                { result: StorageDownloadFileResult ->
+                    tempFile = result.file
+                    Glide.with(context)
+                        .load(result.file)
                         .listener(object : RequestListener<Drawable> {
                             override fun onLoadFailed(
-                                    e: GlideException?,
-                                    model: Any?,
-                                    target: Target<Drawable>?,
-                                    isFirstResource: Boolean
+                                e: GlideException?,
+                                model: Any?,
+                                target: Target<Drawable>?,
+                                isFirstResource: Boolean
                             ): Boolean {
                                 return false
                             }
 
                             override fun onResourceReady(
-                                    resource: Drawable?,
-                                    model: Any?,
-                                    target: Target<Drawable>?,
-                                    dataSource: DataSource?,
-                                    isFirstResource: Boolean
+                                resource: Drawable?,
+                                model: Any?,
+                                target: Target<Drawable>?,
+                                dataSource: DataSource?,
+                                isFirstResource: Boolean
                             ): Boolean {
                                 return false
                             }
                         })
                         .into(profAct_image_profile_image)
+                },
+                { error: StorageException? ->
+                    Log.e(
+                        "MyAmplifyApp",
+                        "Download Failure",
+                        error
+                    )
+                }
+            )
+        } else {
+            tempFile = file
+            CoroutineScope(Main).launch {
+                Glide.with(context)
+                    .load(file)
+                    .listener(object : RequestListener<Drawable> {
+                        override fun onLoadFailed(
+                            e: GlideException?,
+                            model: Any?,
+                            target: Target<Drawable>?,
+                            isFirstResource: Boolean
+                        ): Boolean {
+                            return false
+                        }
+
+                        override fun onResourceReady(
+                            resource: Drawable?,
+                            model: Any?,
+                            target: Target<Drawable>?,
+                            dataSource: DataSource?,
+                            isFirstResource: Boolean
+                        ): Boolean {
+                            return false
+                        }
+                    })
+                    .into(profAct_image_profile_image)
             }
         }
     }
@@ -402,7 +440,7 @@ class ProfileActivity : AppCompatActivity() {
     private fun getImageFromGallery() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) ==
-                    PackageManager.PERMISSION_DENIED
+                PackageManager.PERMISSION_DENIED
             ) {
                 //permission denied
                 val permissions = arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE);
@@ -432,8 +470,8 @@ class ProfileActivity : AppCompatActivity() {
                 file = File(uploadHelper.getRealPath(this, data?.data!!))
             }
             Glide.with(this)
-                    .load(data?.data)
-                    .into(profAct_image_profile_image)
+                .load(data?.data)
+                .into(profAct_image_profile_image)
             hasImage = true
             imageChanged = true
         }
@@ -449,7 +487,9 @@ class ProfileActivity : AppCompatActivity() {
         withContext(Default) {
             posts.clear()
             for (postItem in profiles[0].posts) {
-                posts.add(postItem)
+                if (postItem.status != PostStatus.DRAFT) {
+                    posts.add(postItem)
+                }
             }
             posts.sortByDescending { it.date }
         }
@@ -477,114 +517,116 @@ class ProfileActivity : AppCompatActivity() {
     private fun pageHelper(posts: ArrayList<Post>, profileIdCurrentUser: String) {
         if (postNumber - 5 <= 0) {
             Glide.with(context)
-                    .load(R.drawable.previous_page_unavailable_24)
-                    .listener(object : RequestListener<Drawable> {
-                        override fun onLoadFailed(
-                                e: GlideException?,
-                                model: Any?,
-                                target: Target<Drawable>?,
-                                isFirstResource: Boolean
-                        ): Boolean {
-                            return false
-                        }
+                .load(R.drawable.previous_page_unavailable_24)
+                .listener(object : RequestListener<Drawable> {
+                    override fun onLoadFailed(
+                        e: GlideException?,
+                        model: Any?,
+                        target: Target<Drawable>?,
+                        isFirstResource: Boolean
+                    ): Boolean {
+                        return false
+                    }
 
-                        override fun onResourceReady(
-                                resource: Drawable?,
-                                model: Any?,
-                                target: Target<Drawable>?,
-                                dataSource: DataSource?,
-                                isFirstResource: Boolean
-                        ): Boolean {
-                            profAct_image_previous_page.isClickable = false
-                            return false
-                        }
-                    })
-                    .into(profAct_image_previous_page)
+                    override fun onResourceReady(
+                        resource: Drawable?,
+                        model: Any?,
+                        target: Target<Drawable>?,
+                        dataSource: DataSource?,
+                        isFirstResource: Boolean
+                    ): Boolean {
+                        profAct_image_previous_page.isClickable = false
+                        return false
+                    }
+                })
+                .into(profAct_image_previous_page)
         } else {
             Glide.with(context)
-                    .load(R.drawable.previous_page_available)
-                    .listener(object : RequestListener<Drawable> {
-                        override fun onLoadFailed(
-                                e: GlideException?,
-                                model: Any?,
-                                target: Target<Drawable>?,
-                                isFirstResource: Boolean
-                        ): Boolean {
-                            return false
-                        }
+                .load(R.drawable.previous_page_available)
+                .listener(object : RequestListener<Drawable> {
+                    override fun onLoadFailed(
+                        e: GlideException?,
+                        model: Any?,
+                        target: Target<Drawable>?,
+                        isFirstResource: Boolean
+                    ): Boolean {
+                        return false
+                    }
 
-                        override fun onResourceReady(
-                                resource: Drawable?,
-                                model: Any?,
-                                target: Target<Drawable>?,
-                                dataSource: DataSource?,
-                                isFirstResource: Boolean
-                        ): Boolean {
-                            profAct_image_previous_page.setOnClickListener {
-                                postNumber -= 10
-                                val fivePosts = getFivePosts(posts)
-                                profAct_rc_post.adapter = PostAdapter(fivePosts, context, profileIdCurrentUser)
-                                pageHelper(posts, profileIdCurrentUser)
-                            }
-                            return false
+                    override fun onResourceReady(
+                        resource: Drawable?,
+                        model: Any?,
+                        target: Target<Drawable>?,
+                        dataSource: DataSource?,
+                        isFirstResource: Boolean
+                    ): Boolean {
+                        profAct_image_previous_page.setOnClickListener {
+                            postNumber -= 10
+                            val fivePosts = getFivePosts(posts)
+                            profAct_rc_post.adapter =
+                                PostAdapter(fivePosts, context, profileIdCurrentUser)
+                            pageHelper(posts, profileIdCurrentUser)
                         }
-                    })
-                    .into(profAct_image_previous_page)
+                        return false
+                    }
+                })
+                .into(profAct_image_previous_page)
         }
         if (postNumber >= posts.size) {
             Glide.with(context)
-                    .load(R.drawable.next_page_unavailable_24)
-                    .listener(object : RequestListener<Drawable> {
-                        override fun onLoadFailed(
-                                e: GlideException?,
-                                model: Any?,
-                                target: Target<Drawable>?,
-                                isFirstResource: Boolean
-                        ): Boolean {
-                            return false
-                        }
+                .load(R.drawable.next_page_unavailable_24)
+                .listener(object : RequestListener<Drawable> {
+                    override fun onLoadFailed(
+                        e: GlideException?,
+                        model: Any?,
+                        target: Target<Drawable>?,
+                        isFirstResource: Boolean
+                    ): Boolean {
+                        return false
+                    }
 
-                        override fun onResourceReady(
-                                resource: Drawable?,
-                                model: Any?,
-                                target: Target<Drawable>?,
-                                dataSource: DataSource?,
-                                isFirstResource: Boolean
-                        ): Boolean {
-                            profAct_image_next_page.isClickable = false
-                            return false
-                        }
-                    })
-                    .into(profAct_image_next_page)
+                    override fun onResourceReady(
+                        resource: Drawable?,
+                        model: Any?,
+                        target: Target<Drawable>?,
+                        dataSource: DataSource?,
+                        isFirstResource: Boolean
+                    ): Boolean {
+                        profAct_image_next_page.isClickable = false
+                        return false
+                    }
+                })
+                .into(profAct_image_next_page)
         } else {
             Glide.with(context)
-                    .load(R.drawable.next_page_available_24)
-                    .listener(object : RequestListener<Drawable> {
-                        override fun onLoadFailed(
-                                e: GlideException?,
-                                model: Any?,
-                                target: Target<Drawable>?,
-                                isFirstResource: Boolean
-                        ): Boolean {
-                            return false
-                        }
+                .load(R.drawable.next_page_available_24)
+                .listener(object : RequestListener<Drawable> {
+                    override fun onLoadFailed(
+                        e: GlideException?,
+                        model: Any?,
+                        target: Target<Drawable>?,
+                        isFirstResource: Boolean
+                    ): Boolean {
+                        return false
+                    }
 
-                        override fun onResourceReady(
-                                resource: Drawable?,
-                                model: Any?,
-                                target: Target<Drawable>?,
-                                dataSource: DataSource?,
-                                isFirstResource: Boolean
-                        ): Boolean {
-                            profAct_image_next_page.setOnClickListener {
-                                val fivePosts = getFivePosts(posts)
-                                profAct_rc_post.adapter = PostAdapter(fivePosts, context, profileIdCurrentUser)
-                                pageHelper(posts, profileIdCurrentUser)
-                            }
-                            return false
+                    override fun onResourceReady(
+                        resource: Drawable?,
+                        model: Any?,
+                        target: Target<Drawable>?,
+                        dataSource: DataSource?,
+                        isFirstResource: Boolean
+                    ): Boolean {
+                        profAct_image_next_page.setOnClickListener {
+                            val fivePosts = getFivePosts(posts)
+                            profAct_rc_post.adapter =
+                                PostAdapter(fivePosts, context, profileIdCurrentUser)
+                            pageHelper(posts, profileIdCurrentUser)
                         }
-                    })
-                    .into(profAct_image_next_page)
+                        return false
+                    }
+                })
+                .into(profAct_image_next_page)
         }
     }
 
@@ -595,16 +637,22 @@ class ProfileActivity : AppCompatActivity() {
 
     override fun onBackPressed() {
         if (hasProfile) {
-            if (profAct_layout_save_and_cancel.visibility == View.VISIBLE) {
-                hideEditProfile()
-                return
-            } else {
-                super.onBackPressed()
-                finish()
+            if (!isLoading) {
+                if (profAct_layout_save_and_cancel.visibility == View.VISIBLE) {
+                    showCancelDialog()
+                    return
+                } else {
+                    super.onBackPressed()
+                    finish()
+                }
             }
+        } else {
+            val intentForResult = Intent()
+            intentForResult.putExtra(Constants.PROFILE_EMPTY_BACK_PRESSED, true)
+            setResult(Constants.PROFILE_EMPTY, intentForResult)
+            finish()
         }
     }
-
 
     private fun showEditProfile() {
         runOnUiThread {
@@ -619,19 +667,25 @@ class ProfileActivity : AppCompatActivity() {
 
     private fun hideEditProfile() {
         runOnUiThread {
-            profAct_layout_all.visibility = View.INVISIBLE
+            if (tempFile != file) {
+                Glide.with(context)
+                    .load(tempFile)
+                    .into(profAct_image_profile_image)
+            }
+            profAct_layout_contents.descendantFocusability = FOCUS_BLOCK_DESCENDANTS
             profAct_layout_postrc.visibility = View.VISIBLE
             profAct_text_name.visibility = View.VISIBLE
             profAct_layout_username_and_email.visibility = View.VISIBLE
             profAct_edit_name.visibility = View.GONE
             profAct_layout_save_and_cancel.visibility = View.GONE
             profAct_image_camera.visibility = View.GONE
-            profAct_layout_all.visibility = View.VISIBLE
+            profAct_layout_contents.descendantFocusability = FOCUS_AFTER_DESCENDANTS
         }
     }
 
     private fun showProgressBar() {
         runOnUiThread {
+            isLoading = true
             profAct_progressbar.visibility = View.VISIBLE
             profAct_layout_all.visibility = View.GONE
         }
@@ -639,13 +693,15 @@ class ProfileActivity : AppCompatActivity() {
 
     private fun hideProgressBar() {
         runOnUiThread {
+            isLoading = false
             profAct_progressbar.visibility = View.GONE
             profAct_layout_all.visibility = View.VISIBLE
         }
     }
 
     private fun hideKeyboard() {
-        val inputMethodManager = getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
+        val inputMethodManager =
+            getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
         inputMethodManager.hideSoftInputFromWindow(currentFocus?.windowToken, 0)
     }
 
@@ -672,7 +728,10 @@ class ProfileActivity : AppCompatActivity() {
 
         builder.setPositiveButton(android.R.string.ok) { _, _ ->
             hideKeyboard()
-            onBackPressed()
+            CoroutineScope(Main).launch {
+                hideEditProfile()
+                profAct_nestedScrollView.scrollTo(0, 0)
+            }
         }
         builder.setNegativeButton(android.R.string.cancel) { dialog, _ ->
             dialog.dismiss()
