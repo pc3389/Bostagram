@@ -19,6 +19,7 @@ import bo.young.bonews.utilities.Constants
 import com.amplifyframework.api.graphql.model.ModelMutation
 import com.amplifyframework.api.graphql.model.ModelQuery
 import com.amplifyframework.core.Amplify
+import com.amplifyframework.datastore.generated.model.Like
 import com.amplifyframework.datastore.generated.model.Post
 import com.amplifyframework.datastore.generated.model.Profile
 import com.bumptech.glide.Glide
@@ -37,10 +38,13 @@ import java.io.File
 class PostActivity : AppCompatActivity(), CallbackListener {
     private val context = this
     private val posts: ArrayList<Post> = ArrayList()
-    private val thisPost: ArrayList<Post> = ArrayList()
+    private val currentPostList: ArrayList<Post> = ArrayList()
     private var postNumber = 0
     private var postLoaded = false
+    private var hasLike = false
     private val coroutineScope = CoroutineScope(Main)
+    private var likeStatus = false
+    private var currentLike: Like? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -62,7 +66,7 @@ class PostActivity : AppCompatActivity(), CallbackListener {
         coroutineScope.launch {
             val currentUserName = withContext(IO) { Amplify.Auth.currentUser.username }
             if (postId != null && profileIdCurrentUser != null) {
-                queryPostById(postId, thisPost, currentUserName, profileIdCurrentUser)
+                queryPostById(postId, currentPostList, currentUserName, profileIdCurrentUser)
             }
         }
         postAct_image_back_bt.setOnClickListener {
@@ -76,7 +80,7 @@ class PostActivity : AppCompatActivity(), CallbackListener {
         currentUserName: String,
         profileIdCurrentUser: String
     ) = runOnUiThread {
-        val post = thisPost[0]
+        val post = currentPostList[0]
         val date = post.date
         val imageNumber = post.image
         val image = "$postId-$imageNumber.jpg"
@@ -86,6 +90,22 @@ class PostActivity : AppCompatActivity(), CallbackListener {
         val content = post.contents
         val profileImage = post.profile.profileImage
         val comments = post.comments.size
+        var likes = 0
+
+        for(likeItem in post.likes) {
+            if(likeItem.like) {
+                likes++
+            }
+            if(likeItem.profileId == profileIdCurrentUser) {
+                hasLike = true
+                likeStatus = likeItem.like
+                currentLike = likeItem
+                hasLike = true
+                if(likeStatus) {
+                    postAct_image_like_bt.setImageResource(R.drawable.ic_thumb_up_selected_24)
+                }
+            }
+        }
 
         val profileImageKey = if (profileImage.isNotEmpty()) {
             profileImage.sortByDescending { it.date }
@@ -101,6 +121,7 @@ class PostActivity : AppCompatActivity(), CallbackListener {
         postAct_text_name.text = name
         postAct_text_content.text = content
         postAct_text_comments_number.text = comments.toString()
+        postAct_text_likes_number.text = likes.toString()
 
         val recyclerTitle = "Other posts from $name"
         postAct_text_recycler_title.text = recyclerTitle
@@ -115,13 +136,33 @@ class PostActivity : AppCompatActivity(), CallbackListener {
             setupMenu(username, profileId, currentUserName, postId)
         }
 
-
-
         postAct_layout_comment.setOnClickListener {
             val intent = Intent(context, CommentActivity::class.java).apply {
                 putExtra(Constants.PROFILE_ID_CURRENTUSER, profileIdCurrentUser)
                 putExtra(Constants.PROFILE_ID, profileId)
                 putExtra(Constants.POST_ID, postId)
+            }
+            startActivity(intent)
+        }
+
+        postAct_image_like_bt.setOnClickListener {
+            if(likeStatus) {
+                likeStatus = false
+                postAct_image_like_bt.setImageResource(R.drawable.ic_thumb_up_not_selected24)
+                likes--
+                postAct_text_likes_number.text = likes.toString()
+            } else {
+                likeStatus = true
+                postAct_image_like_bt.setImageResource(R.drawable.ic_thumb_up_selected_24)
+                likes++
+                postAct_text_likes_number.text = likes.toString()
+            }
+            updateLikeStatus(profileIdCurrentUser)
+        }
+        postAct_text_likes_number.setOnClickListener {
+            val intent = Intent(context, LikeActivity::class.java).apply{
+                putExtra(Constants.POST_ID, postId)
+                putExtra(Constants.PROFILE_ID_CURRENTUSER, profileIdCurrentUser)
             }
             startActivity(intent)
         }
@@ -135,6 +176,43 @@ class PostActivity : AppCompatActivity(), CallbackListener {
         }
     }
 
+    private fun updateLikeStatus(profileIdCurrentUser: String) {
+        if (currentLike != null) {
+            val likeItem = currentLike!!.copyOfBuilder()
+                .like(likeStatus)
+                .profileId(profileIdCurrentUser)
+                .post(currentPostList[0])
+                .build()
+
+            Amplify.API.mutate(
+                ModelMutation.update(likeItem),
+                { response ->
+                    Log.i("MyAmplifyApp", "Like status changed: " + response.data.profileId)
+                },
+                { error ->
+                    Log.e("MyAmplifyApp", "Create failed", error)
+                }
+            )
+        } else {
+            val likeItem = Like.builder()
+                .profileId(profileIdCurrentUser)
+                .like(likeStatus)
+                .post(currentPostList[0])
+                .build()
+
+            currentLike = likeItem
+
+            Amplify.API.mutate(
+                ModelMutation.create(likeItem),
+                { response ->
+                    Log.i("MyAmplifyApp", "Like status changed: " + response.data.profileId)
+                },
+                { error ->
+                    Log.e("MyAmplifyApp", "Create failed", error)
+                }
+            )
+        }
+    }
     private fun loadImage(imagePath: String) {
         val file = File(imagePath)
         if (file.exists()) {
@@ -187,11 +265,11 @@ class PostActivity : AppCompatActivity(), CallbackListener {
                     }
                     if (it.itemId == R.id.action_delete) {
                         if (postLoaded) {
-                            postLoaded = if (thisPost.size == 0) {
+                            postLoaded = if (currentPostList.size == 0) {
                                 Toast.makeText(context, "Error", Toast.LENGTH_SHORT).show()
                                 true
                             } else {
-                                showDeleteDialog(thisPost[0])
+                                showDeleteDialog(currentPostList[0])
                                 true
                             }
                         }
@@ -355,12 +433,13 @@ class PostActivity : AppCompatActivity(), CallbackListener {
     }
 
     private fun refreshCommentNumber() {
-        if (thisPost.size != 0) {
+        if (currentPostList.size != 0) {
             Amplify.API.query(
-                ModelQuery.get(Post::class.java, thisPost[0].id),
+                ModelQuery.get(Post::class.java, currentPostList[0].id),
                 { response ->
                     runOnUiThread {
                         postAct_text_comments_number.text = response.data.comments.size.toString()
+                        postAct_text_likes_number.text = response.data.likes.size.toString()
                     }
                 },
                 { error ->

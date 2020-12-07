@@ -56,7 +56,9 @@
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:focusable="true"
+                android:focusableInTouchMode="true">
 
                 <EditText
                     android:id="@+id/uploadAct_edit_title"
@@ -90,7 +92,7 @@
                     android:id="@+id/uploadAct_edit_content"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:minHeight="540dp"
+                    android:minHeight="400dp"
                     android:background="@null"
                     android:textSize="@dimen/small_text_size"
                     android:gravity="top"

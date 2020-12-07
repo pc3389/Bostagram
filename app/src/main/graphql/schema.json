@@ -2192,11 +2192,11 @@
                         "defaultValue": null
                     },
                     {
-                        "name": "date",
+                        "name": "like",
                         "description": null,
                         "type": {
                             "kind": "INPUT_OBJECT",
-                            "name": "ModelStringInput",
+                            "name": "ModelBooleanInput",
                             "ofType": null
                         },
                         "defaultValue": null
@@ -2337,7 +2337,7 @@
                         "deprecationReason": null
                     },
                     {
-                        "name": "date",
+                        "name": "like",
                         "description": null,
                         "args": [],
                         "type": {
@@ -2345,7 +2345,7 @@
                             "name": null,
                             "ofType": {
                                 "kind": "SCALAR",
-                                "name": "String",
+                                "name": "Boolean",
                                 "ofType": null
                             }
                         },
@@ -5187,14 +5187,14 @@
                         "defaultValue": null
                     },
                     {
-                        "name": "date",
+                        "name": "like",
                         "description": null,
                         "type": {
                             "kind": "NON_NULL",
                             "name": null,
                             "ofType": {
                                 "kind": "SCALAR",
-                                "name": "String",
+                                "name": "Boolean",
                                 "ofType": null
                             }
                         },
@@ -5232,11 +5232,11 @@
                         "defaultValue": null
                     },
                     {
-                        "name": "date",
+                        "name": "like",
                         "description": null,
                         "type": {
                             "kind": "INPUT_OBJECT",
-                            "name": "ModelStringInput",
+                            "name": "ModelBooleanInput",
                             "ofType": null
                         },
                         "defaultValue": null
@@ -5325,11 +5325,11 @@
                         "defaultValue": null
                     },
                     {
-                        "name": "date",
+                        "name": "like",
                         "description": null,
                         "type": {
                             "kind": "SCALAR",
-                            "name": "String",
+                            "name": "Boolean",
                             "ofType": null
                         },
                         "defaultValue": null

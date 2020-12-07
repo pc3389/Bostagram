@@ -51,7 +51,7 @@ type Like @model @key(name: "byPost", fields: ["postID"]) {
   id: ID!
   postID: ID!
   profileID: ID!
-  date: String!
+  like: Boolean!
   post: Post @connection(fields: ["postID"])
 }
 

@@ -22,9 +22,10 @@
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/item_main_layout_profile"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
             android:padding="@dimen/layoutPadding">
 
             <com.mikhaellopez.circularimageview.CircularImageView
@@ -41,7 +42,7 @@
 
             <TextView
                 android:id="@+id/item_main_text_name"
-                android:layout_width="0dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="10dp"
                 android:textColor="?attr/colorOnBackground"
@@ -53,14 +54,13 @@
 
             <TextView
                 android:id="@+id/item_main_text_date"
-                android:layout_width="0dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="10dp"
                 android:textColor="?attr/colorOnBackground"
                 app:layout_constraintBottom_toBottomOf="@+id/item_main_image_profile_image"
                 android:textSize="@dimen/small_text_size"
                 app:layout_constraintStart_toEndOf="@id/item_main_image_profile_image"
-                app:layout_constraintEnd_toEndOf="parent"
                 tools:text="Date" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -71,6 +71,8 @@
             android:textColor="?attr/colorOnBackground"
             android:layout_marginHorizontal="@dimen/layoutPadding"
             android:layout_marginVertical="10dp"
+            android:maxLines="1"
+            android:ellipsize="end"
             android:textSize="30sp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/item_main_layout_profile"

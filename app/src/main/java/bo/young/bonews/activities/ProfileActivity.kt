@@ -104,6 +104,7 @@ class ProfileActivity : AppCompatActivity() {
             CoroutineScope(Main).launch {
                 tempFile = file
                 postNumber = 0
+                showProgressBar()
                 hideKeyboard()
                 hideEditProfile()
                 val username = getUsername()
@@ -662,6 +663,7 @@ class ProfileActivity : AppCompatActivity() {
             profAct_edit_name.visibility = View.VISIBLE
             profAct_layout_save_and_cancel.visibility = View.VISIBLE
             profAct_image_camera.visibility = View.VISIBLE
+            profAct_image_menu_bt.visibility = View.GONE
         }
     }
 
@@ -680,6 +682,7 @@ class ProfileActivity : AppCompatActivity() {
             profAct_layout_save_and_cancel.visibility = View.GONE
             profAct_image_camera.visibility = View.GONE
             profAct_layout_contents.descendantFocusability = FOCUS_AFTER_DESCENDANTS
+            profAct_image_menu_bt.visibility = View.VISIBLE
         }
     }
 
@@ -687,7 +690,7 @@ class ProfileActivity : AppCompatActivity() {
         runOnUiThread {
             isLoading = true
             profAct_progressbar.visibility = View.VISIBLE
-            profAct_layout_all.visibility = View.GONE
+            profAct_layout_all.visibility = View.INVISIBLE
         }
     }
 
@@ -696,6 +699,7 @@ class ProfileActivity : AppCompatActivity() {
             isLoading = false
             profAct_progressbar.visibility = View.GONE
             profAct_layout_all.visibility = View.VISIBLE
+            profAct_nestedScrollView.scrollTo(0, 0)
         }
     }
 

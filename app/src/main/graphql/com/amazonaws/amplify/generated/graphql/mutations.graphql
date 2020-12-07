@@ -249,7 +249,7 @@ mutation CreatePost(
         id
         postID
         profileID
-        date
+        like
         createdAt
         updatedAt
       }
@@ -306,7 +306,7 @@ mutation UpdatePost(
         id
         postID
         profileID
-        date
+        like
         createdAt
         updatedAt
       }
@@ -363,7 +363,7 @@ mutation DeletePost(
         id
         postID
         profileID
-        date
+        like
         createdAt
         updatedAt
       }
@@ -559,7 +559,7 @@ mutation CreateLike(
     id
     postID
     profileID
-    date
+    like
     post {
       id
       title
@@ -600,7 +600,7 @@ mutation UpdateLike(
     id
     postID
     profileID
-    date
+    like
     post {
       id
       title
@@ -641,7 +641,7 @@ mutation DeleteLike(
     id
     postID
     profileID
-    date
+    like
     post {
       id
       title

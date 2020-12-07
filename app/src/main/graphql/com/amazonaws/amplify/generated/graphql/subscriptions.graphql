@@ -228,7 +228,7 @@ subscription OnCreatePost {
         id
         postID
         profileID
-        date
+        like
         createdAt
         updatedAt
       }
@@ -282,7 +282,7 @@ subscription OnUpdatePost {
         id
         postID
         profileID
-        date
+        like
         createdAt
         updatedAt
       }
@@ -336,7 +336,7 @@ subscription OnDeletePost {
         id
         postID
         profileID
-        date
+        like
         createdAt
         updatedAt
       }
@@ -511,7 +511,7 @@ subscription OnCreateLike {
     id
     postID
     profileID
-    date
+    like
     post {
       id
       title
@@ -549,7 +549,7 @@ subscription OnUpdateLike {
     id
     postID
     profileID
-    date
+    like
     post {
       id
       title
@@ -587,7 +587,7 @@ subscription OnDeleteLike {
     id
     postID
     profileID
-    date
+    like
     post {
       id
       title

@@ -8,10 +8,6 @@
         android:title="@string/profile"
         app:showAsAction="never"/>
     <item
-        android:id="@+id/action_settings"
-        android:title="@string/settings"
-        app:showAsAction="never" />
-    <item
         android:id="@+id/action_signOut"
         android:title="@string/sign_out"
         app:showAsAction="never" />

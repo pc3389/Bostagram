@@ -54,6 +54,7 @@ class CommentAdapter(private val items: ArrayList<Comment>, val context: Context
                 holder.nameTextView.setOnClickListener {
                     val intent = Intent(context, ProfileActivity::class.java).apply {
                         putExtra(Constants.PROFILE_ID, profileId)
+                        putExtra(Constants.PROFILE_ID_CURRENTUSER, profileIdCurrentUser)
                     }
                     context.startActivity(intent)
                 }

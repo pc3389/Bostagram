@@ -224,7 +224,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:textColor="?attr/backgroundColor"
-                    app:layout_constraintTop_toBottomOf="@id/profAct_layout_profile">
+                    app:layout_constraintTop_toBottomOf="@id/profAct_layout_profile"
+                    android:descendantFocusability="blocksDescendants" >
 
                     <View
                         android:layout_width="match_parent"

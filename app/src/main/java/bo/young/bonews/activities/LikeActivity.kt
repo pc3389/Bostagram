@@ -19,7 +19,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.util.*
 import kotlin.collections.ArrayList
 
 class LikeActivity : AppCompatActivity(), CallbackListener {
@@ -28,13 +27,14 @@ class LikeActivity : AppCompatActivity(), CallbackListener {
     private var currentPost: Post? = null
     private val likeList: ArrayList<Like> = ArrayList()
     private val profileMap: HashMap<String, String> = HashMap()
+    private var profileIdCurrentUser: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_like)
 
-        val profileIdCurrentUser = intent.getStringExtra(Constants.PROFILE_ID_CURRENTUSER)
         val postId = intent.getStringExtra(Constants.POST_ID)
+        profileIdCurrentUser = intent.getStringExtra(Constants.PROFILE_ID_CURRENTUSER)
         val linearLayoutManager = LinearLayoutManager(context)
         linearLayoutManager.reverseLayout = true
         likeAct_rc_posts.layoutManager = linearLayoutManager
@@ -42,10 +42,9 @@ class LikeActivity : AppCompatActivity(), CallbackListener {
         showProgressbar()
 
         coroutineScope.launch {
-            if (profileIdCurrentUser != null && postId != null) {
+            if (postId != null) {
                 queryPost(postId)
             }
-
         }
 
         likeAct_image_back_bt.setOnClickListener {
@@ -62,20 +61,21 @@ class LikeActivity : AppCompatActivity(), CallbackListener {
                 currentPost = post
                 Log.i("MyAmplifyApp", post.title)
                 if (currentPost != null) {
+                    val profileIdList: ArrayList<String> = ArrayList()
                     for (likeItem in currentPost!!.likes) {
-                        likeList.add(likeItem)
+                        if (likeItem.like) {
+                            likeList.add(likeItem)
+                            profileIdList.add(likeItem.profileId)
+                        }
                     }
-                    likeList.sortByDescending { it.date }
                     var count = 0
-                    val maxCount = profileMap.keys.size
-                    for (profileId in profileMap.keys) {
+                    val maxCount = profileIdList.size
+                    for (profileId in profileIdList) {
                         Amplify.API.query(
                             ModelQuery.get(Profile::class.java, profileId),
                             { profileResponse ->
                                 val profileItem = profileResponse.data
-                                if (profileMap[profileItem.id] != profileItem.nickname) {
-                                    profileMap[profileItem.id] = profileItem.nickname
-                                }
+                                profileMap[profileItem.id] = profileItem.nickname
                                 count++
                                 if (count == maxCount) {
                                     callback()
@@ -93,7 +93,10 @@ class LikeActivity : AppCompatActivity(), CallbackListener {
                 hideProgressbar()
 
             },
-            { error -> Log.e("MyAmplifyApp", "Query failure", error) }
+            { error ->
+                Log.e("MyAmplifyApp", "Query failure", error)
+                hideProgressbar()
+            }
         )
     }
 
@@ -113,7 +116,8 @@ class LikeActivity : AppCompatActivity(), CallbackListener {
     }
 
     override fun callback() = runOnUiThread {
-        likeAct_rc_posts.adapter = LikeAdapter(likeList, context, profileMap)
+        likeAct_rc_posts.adapter =
+            LikeAdapter(likeList, context, profileMap, profileIdCurrentUser!!)
         likeAct_rc_posts.scrollToPosition(0)
     }
 

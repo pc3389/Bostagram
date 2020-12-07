@@ -23,11 +23,11 @@ import static com.amplifyframework.core.model.query.predicate.QueryField.field;
 public final class Like implements Model {
   public static final QueryField ID = field("id");
   public static final QueryField PROFILE_ID = field("profileID");
-  public static final QueryField DATE = field("date");
+  public static final QueryField LIKE = field("like");
   public static final QueryField POST = field("postID");
   private final @ModelField(targetType="ID", isRequired = true) String id;
   private final @ModelField(targetType="ID", isRequired = true) String profileID;
-  private final @ModelField(targetType="String", isRequired = true) String date;
+  private final @ModelField(targetType="Boolean", isRequired = true) Boolean like;
   private final @ModelField(targetType="Post") @BelongsTo(targetName = "postID", type = Post.class) Post post;
   public String getId() {
       return id;
@@ -37,18 +37,18 @@ public final class Like implements Model {
       return profileID;
   }
   
-  public String getDate() {
-      return date;
+  public Boolean getLike() {
+      return like;
   }
   
   public Post getPost() {
       return post;
   }
   
-  private Like(String id, String profileID, String date, Post post) {
+  private Like(String id, String profileID, Boolean like, Post post) {
     this.id = id;
     this.profileID = profileID;
-    this.date = date;
+    this.like = like;
     this.post = post;
   }
   
@@ -62,7 +62,7 @@ public final class Like implements Model {
       Like like = (Like) obj;
       return ObjectsCompat.equals(getId(), like.getId()) &&
               ObjectsCompat.equals(getProfileId(), like.getProfileId()) &&
-              ObjectsCompat.equals(getDate(), like.getDate()) &&
+              ObjectsCompat.equals(getLike(), like.getLike()) &&
               ObjectsCompat.equals(getPost(), like.getPost());
       }
   }
@@ -72,7 +72,7 @@ public final class Like implements Model {
     return new StringBuilder()
       .append(getId())
       .append(getProfileId())
-      .append(getDate())
+      .append(getLike())
       .append(getPost())
       .toString()
       .hashCode();
@@ -84,7 +84,7 @@ public final class Like implements Model {
       .append("Like {")
       .append("id=" + String.valueOf(getId()) + ", ")
       .append("profileID=" + String.valueOf(getProfileId()) + ", ")
-      .append("date=" + String.valueOf(getDate()) + ", ")
+      .append("like=" + String.valueOf(getLike()) + ", ")
       .append("post=" + String.valueOf(getPost()))
       .append("}")
       .toString();
@@ -124,16 +124,16 @@ public final class Like implements Model {
   public CopyOfBuilder copyOfBuilder() {
     return new CopyOfBuilder(id,
       profileID,
-      date,
+      like,
       post);
   }
   public interface ProfileIdStep {
-    DateStep profileId(String profileId);
+    LikeStep profileId(String profileId);
   }
   
 
-  public interface DateStep {
-    BuildStep date(String date);
+  public interface LikeStep {
+    BuildStep like(Boolean like);
   }
   
 
@@ -144,10 +144,10 @@ public final class Like implements Model {
   }
   
 
-  public static class Builder implements ProfileIdStep, DateStep, BuildStep {
+  public static class Builder implements ProfileIdStep, LikeStep, BuildStep {
     private String id;
     private String profileID;
-    private String date;
+    private Boolean like;
     private Post post;
     @Override
      public Like build() {
@@ -156,21 +156,21 @@ public final class Like implements Model {
         return new Like(
           id,
           profileID,
-          date,
+          like,
           post);
     }
     
     @Override
-     public DateStep profileId(String profileId) {
+     public LikeStep profileId(String profileId) {
         Objects.requireNonNull(profileId);
         this.profileID = profileId;
         return this;
     }
     
     @Override
-     public BuildStep date(String date) {
-        Objects.requireNonNull(date);
-        this.date = date;
+     public BuildStep like(Boolean like) {
+        Objects.requireNonNull(like);
+        this.like = like;
         return this;
     }
     
@@ -203,10 +203,10 @@ public final class Like implements Model {
   
 
   public final class CopyOfBuilder extends Builder {
-    private CopyOfBuilder(String id, String profileId, String date, Post post) {
+    private CopyOfBuilder(String id, String profileId, Boolean like, Post post) {
       super.id(id);
       super.profileId(profileId)
-        .date(date)
+        .like(like)
         .post(post);
     }
     
@@ -216,8 +216,8 @@ public final class Like implements Model {
     }
     
     @Override
-     public CopyOfBuilder date(String date) {
-      return (CopyOfBuilder) super.date(date);
+     public CopyOfBuilder like(Boolean like) {
+      return (CopyOfBuilder) super.like(like);
     }
     
     @Override

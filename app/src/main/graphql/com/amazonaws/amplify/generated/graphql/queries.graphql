@@ -157,7 +157,7 @@ query GetPost($id: ID!) {
         id
         postID
         profileID
-        date
+        like
         createdAt
         updatedAt
       }
@@ -318,7 +318,7 @@ query GetLike($id: ID!) {
     id
     postID
     profileID
-    date
+    like
     post {
       id
       title
@@ -361,7 +361,7 @@ query ListLikes(
       id
       postID
       profileID
-      date
+      like
       post {
         id
         title

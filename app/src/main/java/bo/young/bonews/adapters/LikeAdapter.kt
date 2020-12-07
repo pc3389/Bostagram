@@ -19,7 +19,8 @@ import kotlinx.android.synthetic.main.list_item_like.view.*
 class LikeAdapter(
     private val items: ArrayList<Like>,
     val context: Context,
-    private val profileMap: HashMap<String, String>
+    private val profileMap: HashMap<String, String>,
+    private val profileIdCurrentUser: String
 ) : RecyclerView.Adapter<LikeAdapter.ViewHolder>() {
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
@@ -31,7 +32,7 @@ class LikeAdapter(
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         return ViewHolder(
             LayoutInflater.from(context).inflate(
-                R.layout.list_item_comment,
+                R.layout.list_item_like,
                 parent,
                 false
             )
@@ -45,6 +46,7 @@ class LikeAdapter(
         holder.profileLayout.setOnClickListener {
             val intent = Intent(context, ProfileActivity::class.java).apply {
                 putExtra(Constants.PROFILE_ID, profileId)
+                putExtra(Constants.PROFILE_ID_CURRENTUSER, profileIdCurrentUser)
             }
             context.startActivity(intent)
         }

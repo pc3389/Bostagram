@@ -174,10 +174,6 @@ class MainActivity : AppCompatActivity() {
             }
 
             popupMenu.setOnMenuItemClickListener {
-                if (it.itemId == R.id.action_settings) {
-                    val intent = Intent(this, SettingsActivity::class.java)
-                    startActivity(intent)
-                }
                 if (it.itemId == R.id.action_profile) {
                     startProfileActivity(profile[0].id)
                 }
