@@ -50,7 +50,7 @@ class PostActivity : AppCompatActivity(), CallbackListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_post)
-        setupUI()
+        setup()
     }
 
     override fun onResume() {
@@ -58,7 +58,7 @@ class PostActivity : AppCompatActivity(), CallbackListener {
         super.onResume()
     }
 
-    private fun setupUI() {
+    private fun setup() {
         postNumber = 0
         showProgressbar()
         val profileIdCurrentUser = intent.getStringExtra(Constants.PROFILE_ID_CURRENTUSER)
@@ -155,21 +155,23 @@ class PostActivity : AppCompatActivity(), CallbackListener {
             startActivity(intent)
         }
 
-        postAct_image_like_bt.setOnClickListener {
-            if(likeStatus) {
-                likeStatus = false
-                postAct_image_like_bt.setImageResource(R.drawable.ic_thumb_up_not_selected24)
-                likes--
-                postEdited = true
-                postAct_text_likes_number.text = likes.toString()
-            } else {
-                likeStatus = true
-                postAct_image_like_bt.setImageResource(R.drawable.ic_thumb_up_selected_24)
-                likes++
-                postEdited = true
-                postAct_text_likes_number.text = likes.toString()
+        if(currentUserName != "guest") {
+            postAct_image_like_bt.setOnClickListener {
+                if (likeStatus) {
+                    likeStatus = false
+                    postAct_image_like_bt.setImageResource(R.drawable.ic_thumb_up_not_selected24)
+                    likes--
+                    postEdited = true
+                    postAct_text_likes_number.text = likes.toString()
+                } else {
+                    likeStatus = true
+                    postAct_image_like_bt.setImageResource(R.drawable.ic_thumb_up_selected_24)
+                    likes++
+                    postEdited = true
+                    postAct_text_likes_number.text = likes.toString()
+                }
+                updateLikeStatus(profileIdCurrentUser)
             }
-            updateLikeStatus(profileIdCurrentUser)
         }
         postAct_text_likes_number.setOnClickListener {
             val intent = Intent(context, LikeActivity::class.java).apply{
@@ -299,7 +301,7 @@ class PostActivity : AppCompatActivity(), CallbackListener {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == Constants.REQUEST_EDIT) {
             if (data?.getBooleanExtra(Constants.POST_EDITED, false) == true) {
-                setupUI()
+                setup()
                 postEdited = true
             }
         }
@@ -450,10 +452,19 @@ class PostActivity : AppCompatActivity(), CallbackListener {
             Amplify.API.query(
                 ModelQuery.get(Post::class.java, currentPostList[0].id),
                 { response ->
+                    val likeList = response.data.likes
+                    var likeNumber = 0
+                    for(likeItem in likeList) {
+                        if(likeItem.like) {
+                            likeNumber++
+                        }
+                    }
                     runOnUiThread {
                         postAct_text_comments_number.text = response.data.comments.size.toString()
-                        postAct_text_likes_number.text = response.data.likes.size.toString()
+                        postAct_text_likes_number.text = likeNumber.toString()
+
                     }
+
                 },
                 { error ->
                     Log.e("MyAmplifyApp", "Query failure", error)

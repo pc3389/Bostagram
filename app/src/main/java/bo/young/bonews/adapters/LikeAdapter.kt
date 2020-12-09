@@ -50,6 +50,7 @@ class LikeAdapter(
             }
             context.startActivity(intent)
         }
+
     }
 
     override fun getItemCount(): Int {
