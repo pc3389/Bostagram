@@ -13,6 +13,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import bo.young.bonews.R
 import bo.young.bonews.activities.*
 import bo.young.bonews.adapters.MainAdapters
+import bo.young.bonews.interfaces.CallbackListener
+import bo.young.bonews.interfaces.MainActivityCallbackListener
 import bo.young.bonews.utilities.Constants
 import com.amplifyframework.api.graphql.model.ModelQuery
 import com.amplifyframework.core.Amplify
@@ -27,7 +29,7 @@ import kotlinx.coroutines.Dispatchers.Default
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.Dispatchers.Main
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), MainActivityCallbackListener {
     private val context = this
 
     private val posts: ArrayList<Post> = ArrayList()
@@ -129,7 +131,7 @@ class MainActivity : AppCompatActivity() {
                             posts.sortByDescending { it.date }
                         }
                         if(profile.isNotEmpty()) {
-                            mainAct_rc_posts.adapter = MainAdapters(posts, context, profile[0].id)
+                            mainAct_rc_posts.adapter = MainAdapters(posts, context, profile[0].id, context)
                             mainAct_itemsswipetorefresh.isRefreshing = false
                         }
                         hideProgressBar()
@@ -245,6 +247,7 @@ class MainActivity : AppCompatActivity() {
                 CoroutineScope(Main).launch { signOut() }
             } else {
                 coroutineScope.launch {
+                    showProgressBar()
                     queryPost()
                     setupMenu()
                 }
@@ -258,6 +261,22 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
+        if(requestCode == Constants.POST) {
+            if(data?.getBooleanExtra(Constants.POST_EDITED, false) == true) {
+                coroutineScope.launch {
+                    showProgressBar()
+                    queryPost()
+                }
+            }
+        }
+        if(requestCode == Constants.PROFILE) {
+            if(data?.getBooleanExtra(Constants.PROFILE_EDITED, false) == true) {
+                coroutineScope.launch {
+                    showProgressBar()
+                    queryPost()
+                }
+            }
+        }
     }
 
     private fun startProfileActivity(profileId: String) {
@@ -265,7 +284,7 @@ class MainActivity : AppCompatActivity() {
             putExtra(Constants.PROFILE_ID, profileId)
             putExtra(Constants.PROFILE_ID_CURRENTUSER, profileId)
         }
-        startActivity(intent)
+        startActivityForResult(intent, Constants.PROFILE)
     }
 
     private fun hideProgressBar() {
@@ -276,4 +295,15 @@ class MainActivity : AppCompatActivity() {
             mainAct_progressbar.visibility = View.GONE
         }
     }
+
+    override fun callback(profileIdCurrentUser: String, profileIdForPost: String, postId: String) {
+        val intent = Intent(this, PostActivity::class.java).apply {
+            putExtra(Constants.PROFILE_ID_CURRENTUSER, profileIdCurrentUser)
+            putExtra(Constants.PROFILE_ID, profileIdForPost)
+            putExtra(Constants.POST_ID, postId)
+        }
+        this.startActivityForResult(intent, Constants.POST)
+    }
+
+
 }

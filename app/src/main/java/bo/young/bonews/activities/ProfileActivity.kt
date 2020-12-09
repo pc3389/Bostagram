@@ -65,6 +65,7 @@ class ProfileActivity : AppCompatActivity() {
     private var hasImage = false
     private var imageChanged = false
     private var isLoading = false
+    private var profileEdited = false
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -120,7 +121,6 @@ class ProfileActivity : AppCompatActivity() {
                 } else {
                     profiles[0].profileImage.first().number + 1
                 }
-
                 val imageKey = if (file != null) {
                     getImageKey(username, number)
                 } else null
@@ -642,10 +642,12 @@ class ProfileActivity : AppCompatActivity() {
                 if (profAct_layout_save_and_cancel.visibility == View.VISIBLE) {
                     showCancelDialog()
                     return
-                } else {
-                    super.onBackPressed()
-                    finish()
                 }
+            }
+            if (profileEdited) {
+                val intentForResult = Intent()
+                intentForResult.putExtra(Constants.PROFILE_EDITED, true)
+                setResult(Constants.PROFILE, intentForResult)
             }
         } else {
             val intentForResult = Intent()
@@ -653,6 +655,7 @@ class ProfileActivity : AppCompatActivity() {
             setResult(Constants.PROFILE_EMPTY, intentForResult)
             finish()
         }
+        super.onBackPressed()
     }
 
     private fun showEditProfile() {

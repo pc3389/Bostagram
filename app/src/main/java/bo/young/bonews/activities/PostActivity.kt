@@ -45,6 +45,7 @@ class PostActivity : AppCompatActivity(), CallbackListener {
     private val coroutineScope = CoroutineScope(Main)
     private var likeStatus = false
     private var currentLike: Like? = null
+    private var postEdited = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -72,6 +73,15 @@ class PostActivity : AppCompatActivity(), CallbackListener {
         postAct_image_back_bt.setOnClickListener {
             onBackPressed()
         }
+    }
+
+    override fun onBackPressed() {
+        if(postEdited) {
+            val intentForResult = Intent()
+            intentForResult.putExtra(Constants.POST_EDITED, true)
+            setResult(Constants.POST, intentForResult)
+        }
+        super.onBackPressed()
     }
 
     private fun loadUI(
@@ -150,11 +160,13 @@ class PostActivity : AppCompatActivity(), CallbackListener {
                 likeStatus = false
                 postAct_image_like_bt.setImageResource(R.drawable.ic_thumb_up_not_selected24)
                 likes--
+                postEdited = true
                 postAct_text_likes_number.text = likes.toString()
             } else {
                 likeStatus = true
                 postAct_image_like_bt.setImageResource(R.drawable.ic_thumb_up_selected_24)
                 likes++
+                postEdited = true
                 postAct_text_likes_number.text = likes.toString()
             }
             updateLikeStatus(profileIdCurrentUser)
@@ -288,6 +300,7 @@ class PostActivity : AppCompatActivity(), CallbackListener {
         if (requestCode == Constants.REQUEST_EDIT) {
             if (data?.getBooleanExtra(Constants.POST_EDITED, false) == true) {
                 setupUI()
+                postEdited = true
             }
         }
     }

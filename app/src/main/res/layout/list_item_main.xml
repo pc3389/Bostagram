@@ -49,7 +49,6 @@
                 android:textSize="@dimen/small_text_size"
                 app:layout_constraintBottom_toTopOf="@id/item_main_text_date"
                 app:layout_constraintStart_toEndOf="@id/item_main_image_profile_image"
-                app:layout_constraintEnd_toEndOf="parent"
                 tools:text="UserName" />
 
             <TextView

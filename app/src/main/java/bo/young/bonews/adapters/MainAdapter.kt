@@ -14,6 +14,8 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.RecyclerView
 import bo.young.bonews.R
 import bo.young.bonews.activities.PostActivity
+import bo.young.bonews.interfaces.CallbackListener
+import bo.young.bonews.interfaces.MainActivityCallbackListener
 import bo.young.bonews.utilities.Constants
 import com.amplifyframework.core.Amplify
 import com.amplifyframework.datastore.generated.model.Post
@@ -32,7 +34,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 
-class MainAdapters(private val items: ArrayList<Post>, val context: Context, val profileIdCurrentUser: String) :
+class MainAdapters(private val items: ArrayList<Post>, val context: Context, private val profileIdCurrentUser: String, private val callBack: MainActivityCallbackListener) :
         RecyclerView.Adapter<MainAdapters.ViewHolder>() {
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
@@ -42,6 +44,8 @@ class MainAdapters(private val items: ArrayList<Post>, val context: Context, val
         val titleTextView: TextView = view.item_main_text_title
         val contentTextView: TextView = view.item_main_text_content
         val commentsTextView: TextView = view.item_main_text_comments_number
+        val likeTextView: TextView = view.item_main_text_likes_number
+        val likeImageView: ImageView = view.item_main_image_like_bt
         val imageImageView: ImageView = view.item_main_image_postImage
         val progressbar: ProgressBar = view.item_main_progressbar
         val itemLayout: ConstraintLayout = view.item_main_layout_all
@@ -77,8 +81,23 @@ class MainAdapters(private val items: ArrayList<Post>, val context: Context, val
                 val content = items[position].contents
                 holder.contentTextView.text = content
                 val comments = items[position].comments.size
-                val numberOfComments = "$comments"
-                holder.commentsTextView.text = numberOfComments
+                holder.commentsTextView.text = comments.toString()
+                holder.likeImageView.setImageResource(R.drawable.ic_thumb_up_not_selected24)
+                val likeList = items[position].likes
+                var likeNumber = 0
+                for(likeItem in likeList) {
+                    if(likeItem.like) {
+                        likeNumber++
+                    }
+                    if(likeItem.profileId == profileIdCurrentUser) {
+                        if(likeItem.like) {
+                            holder.likeImageView.setImageResource(R.drawable.ic_thumb_up_selected_24)
+                        } else {
+                            holder.likeImageView.setImageResource(R.drawable.ic_thumb_up_not_selected24)
+                        }
+                    }
+                }
+                holder.likeTextView.text = likeNumber.toString()
 
                 val profileImageList = if (items[position].profile.profileImage == null) {
                     null
@@ -104,12 +123,7 @@ class MainAdapters(private val items: ArrayList<Post>, val context: Context, val
                     hideProgressBar(holder)
                 }
                 holder.itemView.setOnClickListener {
-                    val intent = Intent(context, PostActivity::class.java).apply {
-                        putExtra(Constants.PROFILE_ID_CURRENTUSER, profileIdCurrentUser)
-                        putExtra(Constants.PROFILE_ID, items[position].profile.id)
-                        putExtra(Constants.POST_ID, postId)
-                    }
-                    context.startActivity(intent)
+                    callBack.callback(profileIdCurrentUser, items[position].profile.id, postId)
                 }
             }
         }

@@ -103,9 +103,10 @@
 
                     <androidx.constraintlayout.widget.ConstraintLayout
                         android:id="@+id/postAct_layout_profile"
-                        android:layout_width="match_parent"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:paddingVertical="@dimen/layoutPadding"
+                        app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toBottomOf="@id/postAct_text_title">
 
                         <com.mikhaellopez.circularimageview.CircularImageView
@@ -122,24 +123,22 @@
 
                         <TextView
                             android:id="@+id/postAct_text_name"
-                            android:layout_width="0dp"
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="10dp"
                             android:textColor="?attr/colorOnBackground"
                             android:textSize="@dimen/small_text_size"
-                            app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintStart_toEndOf="@id/postAct_image_profile_image"
                             app:layout_constraintTop_toTopOf="parent"
                             tools:text="Name" />
 
                         <TextView
                             android:id="@+id/postAct_text_date"
-                            android:layout_width="0dp"
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="10dp"
                             android:textColor="?attr/colorOnBackground"
                             android:textSize="@dimen/small_text_size"
-                            app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintStart_toEndOf="@id/postAct_image_profile_image"
                             app:layout_constraintTop_toBottomOf="@id/postAct_text_name"
                             tools:text="Date" />
